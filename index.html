@@ -1,114 +1,11 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>辦公室訂餐小助手</title>
-    <style>
-        :root {
-            --primary: #ff6b6b;
-            --secondary: #4ecdc4;
-            --dark: #2f2f2f;
-            --light: #f9f9f9;
-        }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        
-        /* 頂部導航與標題 */
-        header { text-align: center; margin-bottom: 30px; }
-        h1 { color: var(--dark); }
-
-        /* 卡片樣式 */
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        
-        /* 店家清單區域 */
-        .store-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
-        .store-item { border: 2px solid #eee; padding: 15px; border-radius: 8px; cursor: pointer; transition: 0.3s; text-align: center; }
-        .store-item:hover { border-color: var(--primary); background: #fff5f5; }
-        .store-item.active { border-color: var(--primary); background: var(--primary); color: white; }
-
-        /* 表單樣式 */
-        input, select, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        button { background: var(--secondary); color: white; border: none; cursor: pointer; font-weight: bold; }
-        button:hover { opacity: 0.9; }
-        .btn-add { background: var(--primary); }
-
-        /* 隱藏區塊 */
-        .hidden { display: none; }
-    </style>
+  <meta charset="UTF-8">
+  <title>午餐訂餐系統 MVP</title>
 </head>
 <body>
-
-<div class="container">
-    <header>
-        <h1>🍱 辦公室午餐救星</h1>
-        <p>不再問「今天要吃什麼？」</p>
-    </header>
-
-    <div class="card">
-        <h3>1. 選擇今天的口袋名單</h3>
-        <div class="store-grid" id="storeList">
-            <div class="store-item" onclick="selectStore('池上便當')">🍱 池上便當 <br><small>⭐ 4.2</small></div>
-            <div class="store-item" onclick="selectStore('健康水煮')">🥗 健康水煮 <br><small>⭐ 4.5</small></div>
-            <div class="store-item" onclick="toggleAddStore()">➕ 推薦新店家</div>
-        </div>
-
-        <div id="addStoreForm" class="hidden">
-            <h4>推薦新餐廳</h4>
-            <input type="text" placeholder="店家名稱">
-            <input type="file" accept="image/*">
-            <small>上傳菜單照片 (OCR 自動辨識開發中)</small>
-            <button class="btn-add">送出推薦並通知同事</button>
-        </div>
-    </div>
-
-    <div id="orderSection" class="card hidden">
-        <h3 id="selectedStoreTitle">正在訂購：</h3>
-        <label>你的名字：</label>
-        <input type="text" id="userName" placeholder="例如：舅舅">
-        
-        <label>選擇餐點：</label>
-        <select id="menuItem">
-            <option>招牌排骨飯 - $100</option>
-            <option>雞腿便當 - $120</option>
-            <option>鱈魚便當 - $110</option>
-        </select>
-
-        <button onclick="submitOrder()">確認點餐 (將寄送通知信)</button>
-    </div>
-
-    <div class="card">
-        <h3>今日訂單匯總</h3>
-        <ul id="summaryList">
-            <li>目前尚無訂單...</li>
-        </ul>
-    </div>
-</div>
-
-<script>
-    function selectStore(name) {
-        document.getElementById('orderSection').classList.remove('hidden');
-        document.getElementById('selectedStoreTitle').innerText = '正在訂購：' + name;
-        // 這裡未來可以根據店名動態抓取菜單
-    }
-
-    function toggleAddStore() {
-        const form = document.getElementById('addStoreForm');
-        form.classList.toggle('hidden');
-    }
-
-    function submitOrder() {
-        const name = document.getElementById('userName').value;
-        const dish = document.getElementById('menuItem').value;
-        if(!name) return alert('請輸入名字');
-
-        const li = document.createElement('li');
-        li.innerText = `${name} 點了 ${dish}`;
-        document.getElementById('summaryList').appendChild(li);
-
-        alert('點餐成功！確認信件已寄發至您的信箱。');
-    }
-</script>
-
+  <h1>🍱 午餐訂餐系統</h1>
+  <p>GitHub Pages 已成功啟用！</p>
 </body>
 </html>
