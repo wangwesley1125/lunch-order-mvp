@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang = "zh-TW">
+
+    <!-- 不會顯示於網頁瀏覽者眼前的 -->
+  <head>
+    <meta charset = "utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>午餐點餐系統 - 本週菜單</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+
+  <!-- 所有會顯示於網頁瀏覽者眼前的內容 -->
+  <body>
+
+    <!-- Header -->
+    <div class = "header">
+      <h1>🍱 午餐點餐系統</h1>
+      <p>你的午餐救星 🌟</p>
+    </div>
+
+    <!-- Navigation Bar -->
+    <div class = "navbar">
+      <a href="index.html">🗳️ 投票中</a>
+      <a href="weekly.html" class="active">📅 本週吃什麼</a>
+      <a href="restaurants.html">🏪 便當店家</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class = "main">
+      <section class = "weekly-menu">
+        <h2>📅 本週午餐菜單</h2>
+        
+        <div class="week-container">
+          <div class="day-menu">
+            <h3>星期一</h3>
+            <select class="lunch-select" data-day="monday">
+              <option value="">-- 選擇店家 --</option>
+              <option value="池上便當">池上便當</option>
+              <option value="八方雲集">八方雲集</option>
+              <option value="周師父">周師父</option>
+            </select>
+            <p class="selected-lunch">尚未選擇</p>
+          </div>
+          
+          <div class="day-menu">
+            <h3>星期二</h3>
+            <select class="lunch-select" data-day="tuesday">
+              <option value="">-- 選擇店家 --</option>
+              <option value="池上便當">池上便當</option>
+              <option value="八方雲集">八方雲集</option>
+              <option value="周師父">周師父</option>
+            </select>
+            <p class="selected-lunch">尚未選擇</p>
+          </div>
+          
+          <div class="day-menu">
+            <h3>星期三</h3>
+            <select class="lunch-select" data-day="wednesday">
+              <option value="">-- 選擇店家 --</option>
+              <option value="池上便當">池上便當</option>
+              <option value="八方雲集">八方雲集</option>
+              <option value="周師父">周師父</option>
+            </select>
+            <p class="selected-lunch">尚未選擇</p>
+          </div>
+          
+          <div class="day-menu">
+            <h3>星期四</h3>
+            <select class="lunch-select" data-day="thursday">
+              <option value="">-- 選擇店家 --</option>
+              <option value="池上便當">池上便當</option>
+              <option value="八方雲集">八方雲集</option>
+              <option value="周師父">周師父</option>
+            </select>
+            <p class="selected-lunch">尚未選擇</p>
+          </div>
+          
+          <div class="day-menu">
+            <h3>星期五</h3>
+            <select class="lunch-select" data-day="friday">
+              <option value="">-- 選擇店家 --</option>
+              <option value="池上便當">池上便當</option>
+              <option value="八方雲集">八方雲集</option>
+              <option value="周師父">周師父</option>
+            </select>
+            <p class="selected-lunch">尚未選擇</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Footer -->
+    <div class = "footer">
+      <p>版權所有 &copy; 2026 午餐點餐系統</p>
+    </div>
+
+  </body>
+
+</html>

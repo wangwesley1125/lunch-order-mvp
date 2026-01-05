@@ -5,7 +5,7 @@
   <head>
     <meta charset = "utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>午餐點餐系統</title>
+    <title>午餐點餐系統 - 投票中</title>
     <link rel="stylesheet" href="style.css">
   </head>
 
@@ -20,31 +20,39 @@
 
     <!-- Navigation Bar -->
     <div class = "navbar">
-      <a href="#">今天吃什麼</a>
-      <a href="#">常用店家</a>
-      <a href="#">新推薦</a>
+      <a href="index.html" class="active">🗳️ 投票中</a>
+      <a href="weekly.html">📅 本週吃什麼</a>
+      <a href="restaurants.html">🏪 便當店家</a>
     </div>
 
     <!-- Main Content -->
     <div class = "main">
-      <section class = "restaurant-list">
+      <section class = "vote-section">
+        <h2>🗳️ 今日午餐投票</h2>
+        <p class="vote-info">投票時間：11:30 - 12:00</p>
+        
+        <div class="vote-container">
+          <div class="vote-option">
+            <img src="https://taiwan.sharelife.tw/tw-feat-store-img/64026/8599051222252813.jpg" alt="池上便當">
+            <h3>池上便當</h3>
+            <p>得票數：5 票</p>
+            <button class="vote-button">投票</button>
+          </div>
 
-        <!-- 餐廳卡片 -->
-        <article class = "restaurant-card">
-          <!-- 圖片 -->
-          <img src = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQgxCCL6t1qWJ_ibcN7dOgSpQnq4oc3d3sTIw&s">
+          <div class="vote-option">
+            <img src="https://www.twec.com.tw/chainstore/%E5%85%AB%E6%96%B9%E9%9B%B2%E9%9B%86/%E5%85%AB%E6%96%B9%E9%9B%B2%E9%9B%861.jpg" alt="八方雲集">
+            <h3>八方雲集</h3>
+            <p>得票數：3 票</p>
+            <button class="vote-button">投票</button>
+          </div>
 
-          <!-- 內容 -->
-          <article class = "card-body">
-            <h3>雞腿便當</h3>
-            <div class = "rating">
-              <span>⭐⭐⭐⭐</span>
-              <span>4星</span>
-              <a href="restaurant.html" class = "button">查看菜單</a>
-            </div>
-          </article>
-        </article>
-
+          <div class="vote-option">
+            <img src="https://images.deliveryhero.io/image/fd-tw/Products/2903117.jpg?width=%s" alt="周師父">
+            <h3>周師父</h3>
+            <p>得票數：2 票</p>
+            <button class="vote-button">投票</button>
+          </div>
+        </div>
       </section>
     </div>
 

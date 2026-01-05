@@ -219,3 +219,237 @@ html, body {
     margin: 12px 0;
   }
 }
+
+/* 投票區域樣式 */
+.vote-section {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.vote-section h2 {
+  text-align: center;
+  color: #bc661a;
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+}
+
+.vote-info {
+  text-align: center;
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 1rem;
+}
+
+.vote-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.vote-option {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+}
+
+.vote-option:hover {
+  transform: translateY(-5px);
+}
+
+.vote-option img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+.vote-option h3 {
+  margin: 15px 15px 10px 15px;
+  font-size: 1.25rem;
+  color: #333;
+}
+
+.vote-option p {
+  margin: 0 15px 10px 15px;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.vote-button {
+  display: inline-block;
+  width: calc(100% - 30px);
+  margin: 0 15px 15px 15px;
+  padding: 10px 16px;
+  background-color: #ffa748;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.vote-button:hover {
+  background-color: #ff9500;
+}
+
+/* 平板尺寸 */
+@media (max-width: 1024px) {
+  .vote-container {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 15px;
+  }
+}
+
+/* 手機尺寸 */
+@media (max-width: 720px) {
+  .vote-container {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .vote-option img {
+    height: 180px;
+  }
+
+  .vote-section h2 {
+    font-size: 1.3rem;
+  }
+
+  .vote-info {
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+  }
+}
+
+.navbar a.active {
+  background-color: #ff9500;
+  font-weight: bold;
+}
+
+/* 本週菜單樣式 */
+.weekly-menu {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.weekly-menu h2 {
+  text-align: center;
+  color: #bc661a;
+  margin-bottom: 30px;
+  font-size: 1.8rem;
+}
+
+.week-container {
+  display: flex;
+  gap: 15px;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+
+.day-menu {
+  flex: 1;
+  min-width: 180px;
+  background: white;
+  border-radius: 8px;
+  padding: 20px 15px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+}
+
+.day-menu:hover {
+  transform: translateY(-5px);
+}
+
+.day-menu h3 {
+  color: #bc661a;
+  margin: 0 0 15px 0;
+  font-size: 1.2rem;
+}
+
+.lunch-select {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #ffa748;
+  border-radius: 4px;
+  background-color: white;
+  color: #333;
+  font-size: 0.95rem;
+  cursor: pointer;
+  margin-bottom: 15px;
+  transition: border-color 0.3s;
+}
+
+.lunch-select:hover {
+  border-color: #ff9500;
+}
+
+.lunch-select:focus {
+  outline: none;
+  border-color: #bc661a;
+}
+
+.selected-lunch {
+  font-size: 1.1rem;
+  color: #999;
+  margin: 10px 0 0 0;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 平板尺寸 */
+@media (max-width: 1024px) {
+  .weekly-menu h2 {
+    font-size: 1.5rem;
+  }
+
+  .week-container {
+    gap: 12px;
+  }
+
+  .day-menu {
+    min-width: 160px;
+  }
+
+  .day-menu h3 {
+    font-size: 1.1rem;
+  }
+
+  .lunch-select {
+    font-size: 0.9rem;
+    padding: 8px;
+  }
+}
+
+/* 手機尺寸 */
+@media (max-width: 720px) {
+  .weekly-menu h2 {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+  }
+
+  .week-container {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .day-menu {
+    min-width: 100%;
+  }
+
+  .day-menu h3 {
+    font-size: 1.2rem;
+  }
+
+  .selected-lunch {
+    font-size: 1rem;
+    min-height: 40px;
+  }
+}
