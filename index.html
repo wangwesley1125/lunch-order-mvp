@@ -30,26 +30,48 @@
       <section class = "vote-section">
         <h2>🗳️ 今日午餐投票</h2>
         <p class="vote-info">投票時間：11:30 - 12:00</p>
-        
-        <div class="vote-container">
-          <div class="vote-option">
+
+        <!-- Google 登入區 -->
+        <div id="loginContainer" class="login-container">
+          <h3>🔐 請先登入 Google 帳號</h3>
+          <p>使用您的 Google 帳號登入以進行投票</p>
+          <button id="google-signin-button">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+            使用 Google 登入
+          </button>
+        </div>
+
+        <!-- 使用者資訊顯示 -->
+        <div id="userInfo" class="user-info hidden">
+          <div class="user-info-left">
+            <img id="userAvatar" class="user-avatar" src="" alt="User Avatar">
+            <div class="user-details">
+              <div class="user-name" id="userName"></div>
+              <div class="user-email" id="userEmail"></div>
+            </div>
+          </div>
+          <button class="logout-btn" id="logoutBtn">登出</button>
+        </div>
+
+        <div class="vote-container" id="voteContainer" style="opacity: 0.5; pointer-events: none;">
+          <div class="vote-option" data-restaurant="chishang">
             <img src="https://taiwan.sharelife.tw/tw-feat-store-img/64026/8599051222252813.jpg" alt="池上便當">
             <h3>池上便當</h3>
-            <p>得票數：5 票</p>
+            <p class="vote-count">得票數：<span>0</span> 票</p>
             <button class="vote-button">投票</button>
           </div>
 
-          <div class="vote-option">
+          <div class="vote-option" data-restaurant="bafang">
             <img src="https://www.twec.com.tw/chainstore/%E5%85%AB%E6%96%B9%E9%9B%B2%E9%9B%86/%E5%85%AB%E6%96%B9%E9%9B%B2%E9%9B%861.jpg" alt="八方雲集">
             <h3>八方雲集</h3>
-            <p>得票數：3 票</p>
+            <p class="vote-count">得票數：<span>0</span> 票</p>
             <button class="vote-button">投票</button>
           </div>
 
-          <div class="vote-option">
-            <img src="https://images.deliveryhero.io/image/fd-tw/Products/2903117.jpg?width=%s" alt="周師父">
+          <div class="vote-option" data-restaurant="zhou">
+            <img src="https://images.deliveryhero.io/image/fd-tw/Products/2903117.jpg?width=400" alt="周師父">
             <h3>周師父</h3>
-            <p>得票數：2 票</p>
+            <p class="vote-count">得票數：<span>0</span> 票</p>
             <button class="vote-button">投票</button>
           </div>
         </div>
@@ -60,6 +82,180 @@
     <div class = "footer">
       <p>版權所有 &copy; 2026 午餐點餐系統</p>
     </div>
+
+
+    <!-- Firebase SDK -->
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+      import { getDatabase, ref, onValue, set, get, runTransaction } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+      import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+
+      // 從外部檔案引入 Firebase 設定
+      import { firebaseConfig } from './firebase-config.js';
+
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+      const auth = getAuth(app);
+      const provider = new GoogleAuthProvider();
+
+      const today = new Date().toISOString().split('T')[0];
+      const votesRef = ref(database, `votes/${today}`);
+
+      let currentUser = null;
+
+      // 監聽使用者登入狀態
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          // 使用者已登入
+          currentUser = user;
+          showUserInfo(user);
+          
+          // 檢查是否已投票
+          const emailKey = user.email.replace(/[.@]/g, '_');
+          const voterSnapshot = await get(ref(database, `voters/${today}/${emailKey}`));
+          
+          if (voterSnapshot.exists()) {
+            const votedRestaurant = voterSnapshot.val();
+            showVotedState(votedRestaurant);
+          } else {
+            // 啟用投票介面
+            document.getElementById('voteContainer').style.opacity = '1';
+            document.getElementById('voteContainer').style.pointerEvents = 'auto';
+          }
+        } else {
+          // 使用者未登入
+          currentUser = null;
+          document.getElementById('loginContainer').classList.remove('hidden');
+          document.getElementById('userInfo').classList.add('hidden');
+          document.getElementById('voteContainer').style.opacity = '0.5';
+          document.getElementById('voteContainer').style.pointerEvents = 'none';
+        }
+      });
+
+      // Google 登入按鈕
+      document.getElementById('google-signin-button').addEventListener('click', async () => {
+        try {
+          const result = await signInWithPopup(auth, provider);
+          const user = result.user;
+          
+          // 檢查是否為 Gmail 帳號
+          if (!user.email.endsWith('@gmail.com')) {
+            alert('請使用 Gmail 帳號登入！');
+            await signOut(auth);
+            return;
+          }
+          
+          console.log('登入成功:', user.email);
+        } catch (error) {
+          console.error('登入失敗:', error);
+          alert('登入失敗：' + error.message);
+        }
+      });
+
+      // 登出按鈕
+      document.getElementById('logoutBtn').addEventListener('click', async () => {
+        try {
+          await signOut(auth);
+          location.reload();
+        } catch (error) {
+          console.error('登出失敗:', error);
+        }
+      });
+
+      // 顯示使用者資訊
+      function showUserInfo(user) {
+        document.getElementById('loginContainer').classList.add('hidden');
+        document.getElementById('userInfo').classList.remove('hidden');
+        document.getElementById('userName').textContent = user.displayName || '使用者';
+        document.getElementById('userEmail').textContent = user.email;
+        document.getElementById('userAvatar').src = user.photoURL || 'https://via.placeholder.com/50';
+      }
+
+      // 即時監聽投票數變化
+      onValue(votesRef, (snapshot) => {
+        const votes = snapshot.val() || { chishang: 0, bafang: 0, zhou: 0 };
+        
+        document.querySelectorAll('.vote-option').forEach(option => {
+          const restaurant = option.getAttribute('data-restaurant');
+          const countSpan = option.querySelector('.vote-count span');
+          countSpan.textContent = votes[restaurant] || 0;
+        });
+      });
+
+      // 處理投票按鈕點擊
+      document.querySelectorAll('.vote-button').forEach(button => {
+        button.addEventListener('click', async (e) => {
+          if (!currentUser) {
+            alert('請先登入 Google 帳號');
+            return;
+          }
+
+          const voteOption = e.target.closest('.vote-option');
+          const restaurant = voteOption.getAttribute('data-restaurant');
+          const restaurantRef = ref(database, `votes/${today}/${restaurant}`);
+          const emailKey = currentUser.email.replace(/[.@]/g, '_');
+          const voterRef = ref(database, `voters/${today}/${emailKey}`);
+
+          try {
+            // 再次確認是否已投票
+            const voterSnapshot = await get(voterRef);
+            if (voterSnapshot.exists()) {
+              alert('您已經投過票了！');
+              return;
+            }
+
+            // 執行投票
+            await runTransaction(restaurantRef, (currentVotes) => {
+              return (currentVotes || 0) + 1;
+            });
+
+            // 記錄投票者
+            await runTransaction(voterRef, () => {
+              return restaurant;
+            });
+
+            // 顯示投票成功
+            showVotedState(restaurant);
+            alert('投票成功！感謝您的參與 😊');
+
+          } catch (error) {
+            console.error('投票失敗：', error);
+            alert('投票失敗，請稍後再試');
+          }
+        });
+      });
+
+      // 顯示已投票狀態
+      function showVotedState(votedRestaurant) {
+        document.querySelectorAll('.vote-option').forEach(option => {
+          const restaurant = option.getAttribute('data-restaurant');
+          const button = option.querySelector('.vote-button');
+          
+          button.disabled = true;
+          
+          if (restaurant === votedRestaurant) {
+            button.textContent = '✓ 已投票';
+            button.style.backgroundColor = '#28a745';
+            option.style.border = '2px solid #28a745';
+          } else {
+            button.textContent = '已結束';
+            button.style.backgroundColor = '#6c757d';
+          }
+        });
+      }
+
+      // 取得餐廳中文名稱
+      function getRestaurantName(key) {
+        const names = {
+          'chishang': '池上便當',
+          'bafang': '八方雲集',
+          'zhou': '周師父'
+        };
+        return names[key] || key;
+      }
+    </script>
+
   </body>
 
 </html>

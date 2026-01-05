@@ -453,3 +453,104 @@ html, body {
     min-height: 40px;
   }
 }
+
+/* Google 登入區 */
+.login-container {
+  background: #f8f9fa;
+  border: 3px solid #bc661a;
+  border-radius: 10px;
+  padding: 40px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+.login-container h3 {
+  color: #bc661a;
+  margin-bottom: 20px;
+  font-size: 1.3em;
+}
+
+.login-container p {
+  color: #bc661a;
+  margin-bottom: 25px;
+}
+
+#google-signin-button {
+  display: inline-flex;
+  align-items: center;
+  background: white;
+  border: 1px solid #bc661a;
+  border-radius: 4px;
+  padding: 12px 24px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  color: #3c4043;
+  transition: all 0.3s;
+}
+
+#google-signin-button:hover {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+
+#google-signin-button img {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+}
+
+.user-info {
+  background: #e8f5e9;
+  border: 2px solid #4caf50;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-info-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #4caf50;
+}
+
+.user-details {
+  text-align: left;
+}
+
+.user-name {
+  font-weight: bold;
+  color: #2e7d32;
+  font-size: 1.1em;
+}
+
+.user-email {
+  color: #66bb6a;
+  font-size: 0.9em;
+}
+
+.logout-btn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.logout-btn:hover {
+  background-color: #d32f2f;
+}
+
+.hidden {
+  display: none !important;
+}
