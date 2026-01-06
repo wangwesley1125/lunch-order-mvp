@@ -23,15 +23,23 @@
       <a href="index.html" class="active">🗳️ 投票中</a>
       <a href="weekly.html">📅 本週吃什麼</a>
       <a href="restaurants.html">🏪 便當店家</a>
+      <a href="add_restaurants.html"> ➕ 新增店家</a>
     </div>
 
     <!-- Main Content -->
     <div class = "main">
       <section class = "vote-section">
         <h2>🗳️ 今日午餐投票</h2>
-        <p class="vote-info">投票時間：11:30 - 12:00</p>
+        <div class="time-display" id="timeDisplay">
+          載入中...
+        </div>
 
-        <!-- Google 登入區 -->
+        <div id="votingClosed" class="voting-closed hidden">
+          <h3>⏰ 投票時間已結束</h3>
+          <p>今日投票已經結束囉~</p>
+          <p>請明天早上 10:30 前再來投票哦！</p>
+        </div>
+
         <div id="loginContainer" class="login-container">
           <h3>🔐 請先登入 Google 帳號</h3>
           <p>使用您的 Google 帳號登入以進行投票</p>
@@ -41,7 +49,6 @@
           </button>
         </div>
 
-        <!-- 使用者資訊顯示 -->
         <div id="userInfo" class="user-info hidden">
           <div class="user-info-left">
             <img id="userAvatar" class="user-avatar" src="" alt="User Avatar">
@@ -53,27 +60,20 @@
           <button class="logout-btn" id="logoutBtn">登出</button>
         </div>
 
+        <!-- 載入中訊息 -->
+        <div id="loadingRestaurants" class="loading-restaurants">
+          <p>載入店家資料中...</p>
+        </div>
+
+        <!-- 沒有店家時的提示 -->
+        <div id="noRestaurants" class="no-restaurants hidden">
+          <h3>目前還沒有任何店家可以投票</h3>
+          <p>請先到「➕ 新增店家」頁面新增店家！</p>
+        </div>
+
+        <!-- 投票選項容器 -->
         <div class="vote-container" id="voteContainer" style="opacity: 0.5; pointer-events: none;">
-          <div class="vote-option" data-restaurant="chishang">
-            <img src="https://taiwan.sharelife.tw/tw-feat-store-img/64026/8599051222252813.jpg" alt="池上便當">
-            <h3>池上便當</h3>
-            <p class="vote-count">得票數：<span>0</span> 票</p>
-            <button class="vote-button">投票</button>
-          </div>
-
-          <div class="vote-option" data-restaurant="bafang">
-            <img src="https://www.twec.com.tw/chainstore/%E5%85%AB%E6%96%B9%E9%9B%B2%E9%9B%86/%E5%85%AB%E6%96%B9%E9%9B%B2%E9%9B%861.jpg" alt="八方雲集">
-            <h3>八方雲集</h3>
-            <p class="vote-count">得票數：<span>0</span> 票</p>
-            <button class="vote-button">投票</button>
-          </div>
-
-          <div class="vote-option" data-restaurant="zhou">
-            <img src="https://images.deliveryhero.io/image/fd-tw/Products/2903117.jpg?width=400" alt="周師父">
-            <h3>周師父</h3>
-            <p class="vote-count">得票數：<span>0</span> 票</p>
-            <button class="vote-button">投票</button>
-          </div>
+          <!-- 這裡會動態載入店家選項 -->
         </div>
       </section>
     </div>
@@ -110,31 +110,163 @@
 
       const today = new Date().toISOString().split('T')[0];
       const votesRef = ref(database, `votes/${today}`);
+      const restaurantsRef = ref(database, 'restaurants');
+      const weeklyRef = ref(database, 'weekly');
 
       let currentUser = null;
+      let userCurrentVote = null;
+      let availableRestaurants = [];
+      let votingAllowed = false;
+
+      // 檢查投票時間
+      function checkVotingTime() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const currentTime = hours * 60 + minutes; // 轉換為分鐘
+        const deadline = 10 * 60 + 30; // 10:30 = 630 分鐘
+
+        votingAllowed = currentTime < deadline;
+
+        // 更新時間顯示
+        const timeDisplay = document.getElementById('timeDisplay');
+        const timeStr = now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        
+        if (votingAllowed) {
+          const remainingMinutes = deadline - currentTime;
+          const remainingHours = Math.floor(remainingMinutes / 60);
+          const remainingMins = remainingMinutes % 60;
+          timeDisplay.innerHTML = `🕐 當前時間：${timeStr}<br>距離投票截止還有 ${remainingHours} 小時 ${remainingMins} 分鐘`;
+          timeDisplay.style.background = '#e3f2fd';
+          timeDisplay.style.color = '#1976d2';
+        } else {
+          timeDisplay.innerHTML = `🕐 當前時間：${timeStr}<br>投票已截止（截止時間：10:30）`;
+          timeDisplay.style.background = '#ffebee';
+          timeDisplay.style.color = '#d32f2f';
+        }
+
+        // 顯示或隱藏投票截止訊息
+        const votingClosedDiv = document.getElementById('votingClosed');
+        const voteContainer = document.getElementById('voteContainer');
+        
+        if (!votingAllowed) {
+          votingClosedDiv.classList.remove('hidden');
+          voteContainer.style.opacity = '0.5';
+          voteContainer.style.pointerEvents = 'none';
+        } else {
+          votingClosedDiv.classList.add('hidden');
+          if (currentUser) {
+            voteContainer.style.opacity = '1';
+            voteContainer.style.pointerEvents = 'auto';
+          }
+        }
+
+        return votingAllowed;
+      }
+
+      // 每秒更新時間檢查
+      setInterval(checkVotingTime, 1000);
+      checkVotingTime();
+
+      // 自動結算投票並寫入每週菜單
+      async function finalizeVoting() {
+        try {
+          const votesSnapshot = await get(votesRef);
+          const votes = votesSnapshot.val();
+
+          if (!votes) {
+            console.log('今天沒有任何投票');
+            return;
+          }
+
+          // 找出得票最高的店家
+          let maxVotes = 0;
+          let winningRestaurant = null;
+
+          for (const [restaurantId, voteCount] of Object.entries(votes)) {
+            if (voteCount > maxVotes) {
+              maxVotes = voteCount;
+              winningRestaurant = restaurantId;
+            }
+          }
+
+          if (winningRestaurant) {
+            // 取得店家資料
+            const restaurantSnapshot = await get(ref(database, `restaurants/${winningRestaurant}`));
+            const restaurantData = restaurantSnapshot.val();
+
+            // 判斷今天是星期幾
+            const dayOfWeek = new Date().getDay(); // 0=週日, 1=週一, ..., 6=週六
+            const dayMap = {
+              1: 'monday',
+              2: 'tuesday',
+              3: 'wednesday',
+              4: 'thursday',
+              5: 'friday'
+            };
+
+            const dayKey = dayMap[dayOfWeek];
+
+            if (dayKey) {
+              // 寫入每週菜單
+              await set(ref(database, `weekly/${dayKey}`), {
+                restaurantId: winningRestaurant,
+                restaurantName: restaurantData?.name || winningRestaurant,
+                votes: maxVotes,
+                date: today
+              });
+
+              console.log(`今日獲勝店家：${restaurantData?.name}，得票數：${maxVotes}`);
+            }
+          }
+        } catch (error) {
+          console.error('結算投票失敗：', error);
+        }
+      }
+
+      // 在 10:30 時自動執行結算
+      function scheduleFinalization() {
+        const now = new Date();
+        const target = new Date();
+        target.setHours(10, 30, 0, 0);
+
+        // 如果現在已經超過 10:30，設定為明天的 10:30
+        if (now > target) {
+          target.setDate(target.getDate() + 1);
+        }
+
+        const timeUntilFinalization = target - now;
+        
+        setTimeout(() => {
+          finalizeVoting();
+          // 每天重複執行
+          setInterval(finalizeVoting, 24 * 60 * 60 * 1000);
+        }, timeUntilFinalization);
+      }
+
+      scheduleFinalization();
 
       // 監聽使用者登入狀態
       onAuthStateChanged(auth, async (user) => {
         if (user) {
-          // 使用者已登入
           currentUser = user;
           showUserInfo(user);
           
-          // 檢查是否已投票
           const emailKey = user.email.replace(/[.@]/g, '_');
           const voterSnapshot = await get(ref(database, `voters/${today}/${emailKey}`));
           
           if (voterSnapshot.exists()) {
-            const votedRestaurant = voterSnapshot.val();
-            showVotedState(votedRestaurant);
-          } else {
-            // 啟用投票介面
+            userCurrentVote = voterSnapshot.val();
+            updateVoteUI(userCurrentVote);
+          }
+          
+          if (votingAllowed) {
             document.getElementById('voteContainer').style.opacity = '1';
             document.getElementById('voteContainer').style.pointerEvents = 'auto';
           }
         } else {
-          // 使用者未登入
           currentUser = null;
+          userCurrentVote = null;
           document.getElementById('loginContainer').classList.remove('hidden');
           document.getElementById('userInfo').classList.add('hidden');
           document.getElementById('voteContainer').style.opacity = '0.5';
@@ -142,20 +274,189 @@
         }
       });
 
+      // 監聽店家資料變化
+      onValue(restaurantsRef, (snapshot) => {
+        const loadingDiv = document.getElementById('loadingRestaurants');
+        const noRestaurantsDiv = document.getElementById('noRestaurants');
+        const voteContainer = document.getElementById('voteContainer');
+
+        loadingDiv.classList.add('hidden');
+
+        const restaurants = snapshot.val();
+
+        if (!restaurants) {
+          noRestaurantsDiv.classList.remove('hidden');
+          voteContainer.innerHTML = '';
+          availableRestaurants = [];
+          return;
+        }
+
+        availableRestaurants = Object.entries(restaurants)
+          .filter(([id, data]) => data.isActive)
+          .map(([id, data]) => ({
+            id,
+            ...data
+          }));
+
+        if (availableRestaurants.length === 0) {
+          noRestaurantsDiv.classList.remove('hidden');
+          voteContainer.innerHTML = '';
+          return;
+        }
+
+        noRestaurantsDiv.classList.add('hidden');
+
+        voteContainer.innerHTML = '';
+        availableRestaurants.forEach(restaurant => {
+          const voteOption = createVoteOption(restaurant);
+          voteContainer.appendChild(voteOption);
+        });
+
+        if (userCurrentVote) {
+          updateVoteUI(userCurrentVote);
+        }
+      });
+
+      // 建立投票選項
+      function createVoteOption(restaurant) {
+        const div = document.createElement('div');
+        div.className = 'vote-option';
+        div.setAttribute('data-restaurant', restaurant.id);
+
+        const img = document.createElement('img');
+        img.src = restaurant.imageUrl || 'https://via.placeholder.com/400x300?text=無圖片';
+        img.alt = restaurant.name;
+        img.onerror = function() {
+          this.src = 'https://via.placeholder.com/400x300?text=無圖片';
+        };
+
+        const content = document.createElement('div');
+        content.className = 'vote-option-content';
+
+        const h3 = document.createElement('h3');
+        h3.textContent = restaurant.name;
+
+        const typeSpan = document.createElement('span');
+        typeSpan.className = 'restaurant-type';
+        typeSpan.textContent = restaurant.type || '其他';
+
+        const voteCount = document.createElement('p');
+        voteCount.className = 'vote-count';
+        voteCount.innerHTML = '得票數：<span>0</span> 票';
+
+        const button = document.createElement('button');
+        button.className = 'vote-button not-selected';
+        button.textContent = '投票';
+        button.addEventListener('click', () => handleVote(restaurant.id));
+
+        content.appendChild(h3);
+        content.appendChild(typeSpan);
+        content.appendChild(voteCount);
+        content.appendChild(button);
+
+        div.appendChild(img);
+        div.appendChild(content);
+
+        return div;
+      }
+
+      // 即時監聽投票數變化
+      onValue(votesRef, (snapshot) => {
+        const votes = snapshot.val() || {};
+        
+        document.querySelectorAll('.vote-option').forEach(option => {
+          const restaurantId = option.getAttribute('data-restaurant');
+          const countSpan = option.querySelector('.vote-count span');
+          countSpan.textContent = votes[restaurantId] || 0;
+        });
+      });
+
+      // 更新投票 UI
+      function updateVoteUI(votedRestaurantId) {
+        document.querySelectorAll('.vote-option').forEach(option => {
+          const restaurantId = option.getAttribute('data-restaurant');
+          const button = option.querySelector('.vote-button');
+          
+          if (restaurantId === votedRestaurantId) {
+            option.classList.add('selected');
+            button.classList.remove('not-selected');
+            button.classList.add('selected');
+            button.textContent = '✓ 目前選擇';
+          } else {
+            option.classList.remove('selected');
+            button.classList.remove('selected');
+            button.classList.add('not-selected');
+            button.textContent = '改投此店';
+          }
+        });
+      }
+
+      // 處理投票
+      async function handleVote(restaurantId) {
+        if (!currentUser) {
+          alert('請先登入 Google 帳號');
+          return;
+        }
+
+        if (!votingAllowed) {
+          alert('投票時間已結束！請明天早上 10:30 前再來投票。');
+          return;
+        }
+
+        if (restaurantId === userCurrentVote) {
+          return;
+        }
+
+        const emailKey = currentUser.email.replace(/[.@]/g, '_');
+        const voterRef = ref(database, `voters/${today}/${emailKey}`);
+
+        try {
+          if (userCurrentVote) {
+            const oldRestaurantRef = ref(database, `votes/${today}/${userCurrentVote}`);
+            await runTransaction(oldRestaurantRef, (currentVotes) => {
+              return Math.max((currentVotes || 0) - 1, 0);
+            });
+          }
+
+          const newRestaurantRef = ref(database, `votes/${today}/${restaurantId}`);
+          await runTransaction(newRestaurantRef, (currentVotes) => {
+            return (currentVotes || 0) + 1;
+          });
+
+          await set(voterRef, restaurantId);
+
+          const oldVote = userCurrentVote;
+          userCurrentVote = restaurantId;
+          updateVoteUI(restaurantId);
+
+          const restaurant = availableRestaurants.find(r => r.id === restaurantId);
+          const restaurantName = restaurant ? restaurant.name : restaurantId;
+
+          if (oldVote) {
+            const oldRestaurant = availableRestaurants.find(r => r.id === oldVote);
+            const oldName = oldRestaurant ? oldRestaurant.name : oldVote;
+            console.log(`投票已更改：${oldName} → ${restaurantName}`);
+          } else {
+            console.log(`投票成功：${restaurantName}`);
+          }
+
+        } catch (error) {
+          console.error('投票失敗：', error);
+          alert('投票失敗，請稍後再試');
+        }
+      }
+
       // Google 登入按鈕
       document.getElementById('google-signin-button').addEventListener('click', async () => {
         try {
           const result = await signInWithPopup(auth, provider);
           const user = result.user;
           
-          // 檢查是否為 Gmail 帳號
           if (!user.email.endsWith('@gmail.com')) {
             alert('請使用 Gmail 帳號登入！');
             await signOut(auth);
             return;
           }
-          
-          console.log('登入成功:', user.email);
         } catch (error) {
           console.error('登入失敗:', error);
           alert('登入失敗：' + error.message);
@@ -179,89 +480,6 @@
         document.getElementById('userName').textContent = user.displayName || '使用者';
         document.getElementById('userEmail').textContent = user.email;
         document.getElementById('userAvatar').src = user.photoURL || 'https://via.placeholder.com/50';
-      }
-
-      // 即時監聽投票數變化
-      onValue(votesRef, (snapshot) => {
-        const votes = snapshot.val() || { chishang: 0, bafang: 0, zhou: 0 };
-        
-        document.querySelectorAll('.vote-option').forEach(option => {
-          const restaurant = option.getAttribute('data-restaurant');
-          const countSpan = option.querySelector('.vote-count span');
-          countSpan.textContent = votes[restaurant] || 0;
-        });
-      });
-
-      // 處理投票按鈕點擊
-      document.querySelectorAll('.vote-button').forEach(button => {
-        button.addEventListener('click', async (e) => {
-          if (!currentUser) {
-            alert('請先登入 Google 帳號');
-            return;
-          }
-
-          const voteOption = e.target.closest('.vote-option');
-          const restaurant = voteOption.getAttribute('data-restaurant');
-          const restaurantRef = ref(database, `votes/${today}/${restaurant}`);
-          const emailKey = currentUser.email.replace(/[.@]/g, '_');
-          const voterRef = ref(database, `voters/${today}/${emailKey}`);
-
-          try {
-            // 再次確認是否已投票
-            const voterSnapshot = await get(voterRef);
-            if (voterSnapshot.exists()) {
-              alert('您已經投過票了！');
-              return;
-            }
-
-            // 執行投票
-            await runTransaction(restaurantRef, (currentVotes) => {
-              return (currentVotes || 0) + 1;
-            });
-
-            // 記錄投票者
-            await runTransaction(voterRef, () => {
-              return restaurant;
-            });
-
-            // 顯示投票成功
-            showVotedState(restaurant);
-            alert('投票成功！感謝您的參與 😊');
-
-          } catch (error) {
-            console.error('投票失敗：', error);
-            alert('投票失敗，請稍後再試');
-          }
-        });
-      });
-
-      // 顯示已投票狀態
-      function showVotedState(votedRestaurant) {
-        document.querySelectorAll('.vote-option').forEach(option => {
-          const restaurant = option.getAttribute('data-restaurant');
-          const button = option.querySelector('.vote-button');
-          
-          button.disabled = true;
-          
-          if (restaurant === votedRestaurant) {
-            button.textContent = '✓ 已投票';
-            button.style.backgroundColor = '#28a745';
-            option.style.border = '2px solid #28a745';
-          } else {
-            button.textContent = '已結束';
-            button.style.backgroundColor = '#6c757d';
-          }
-        });
-      }
-
-      // 取得餐廳中文名稱
-      function getRestaurantName(key) {
-        const names = {
-          'chishang': '池上便當',
-          'bafang': '八方雲集',
-          'zhou': '周師父'
-        };
-        return names[key] || key;
       }
     </script>
 

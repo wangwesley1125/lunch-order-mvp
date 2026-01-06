@@ -23,6 +23,7 @@
       <a href="index.html">🗳️ 投票中</a>
       <a href="weekly.html" class="active">📅 本週吃什麼</a>
       <a href="restaurants.html">🏪 便當店家</a>
+      <a href="add_restaurants.html"> ➕ 新增店家</a>
     </div>
 
     <!-- Main Content -->
@@ -30,60 +31,54 @@
       <section class = "weekly-menu">
         <h2>📅 本週午餐菜單</h2>
         
-        <div class="week-container">
+        <div id="loading" class="loading">
+          載入本週菜單中...
+        </div>
+
+        <div class="week-container" id="weekContainer" style="display: none;">
           <div class="day-menu">
-            <h3>星期一</h3>
-            <select class="lunch-select" data-day="monday">
-              <option value="">-- 選擇店家 --</option>
-              <option value="池上便當">池上便當</option>
-              <option value="八方雲集">八方雲集</option>
-              <option value="周師父">周師父</option>
-            </select>
-            <p class="selected-lunch">尚未選擇</p>
+            <div class="day-header">
+              <h3>🗓️ 星期一</h3>
+              <span class="date-badge" id="mondayDate"></span>
+            </div>
+            <p class="selected-lunch no-selection" id="mondayLunch">尚未選擇</p>
+            <p class="vote-info" id="mondayVotes"></p>
           </div>
           
           <div class="day-menu">
-            <h3>星期二</h3>
-            <select class="lunch-select" data-day="tuesday">
-              <option value="">-- 選擇店家 --</option>
-              <option value="池上便當">池上便當</option>
-              <option value="八方雲集">八方雲集</option>
-              <option value="周師父">周師父</option>
-            </select>
-            <p class="selected-lunch">尚未選擇</p>
+            <div class="day-header">
+              <h3>🗓️ 星期二</h3>
+              <span class="date-badge" id="tuesdayDate"></span>
+            </div>
+            <p class="selected-lunch no-selection" id="tuesdayLunch">尚未選擇</p>
+            <p class="vote-info" id="tuesdayVotes"></p>
           </div>
           
           <div class="day-menu">
-            <h3>星期三</h3>
-            <select class="lunch-select" data-day="wednesday">
-              <option value="">-- 選擇店家 --</option>
-              <option value="池上便當">池上便當</option>
-              <option value="八方雲集">八方雲集</option>
-              <option value="周師父">周師父</option>
-            </select>
-            <p class="selected-lunch">尚未選擇</p>
+            <div class="day-header">
+              <h3>🗓️ 星期三</h3>
+              <span class="date-badge" id="wednesdayDate"></span>
+            </div>
+            <p class="selected-lunch no-selection" id="wednesdayLunch">尚未選擇</p>
+            <p class="vote-info" id="wednesdayVotes"></p>
           </div>
           
           <div class="day-menu">
-            <h3>星期四</h3>
-            <select class="lunch-select" data-day="thursday">
-              <option value="">-- 選擇店家 --</option>
-              <option value="池上便當">池上便當</option>
-              <option value="八方雲集">八方雲集</option>
-              <option value="周師父">周師父</option>
-            </select>
-            <p class="selected-lunch">尚未選擇</p>
+            <div class="day-header">
+              <h3>🗓️ 星期四</h3>
+              <span class="date-badge" id="thursdayDate"></span>
+            </div>
+            <p class="selected-lunch no-selection" id="thursdayLunch">尚未選擇</p>
+            <p class="vote-info" id="thursdayVotes"></p>
           </div>
           
           <div class="day-menu">
-            <h3>星期五</h3>
-            <select class="lunch-select" data-day="friday">
-              <option value="">-- 選擇店家 --</option>
-              <option value="池上便當">池上便當</option>
-              <option value="八方雲集">八方雲集</option>
-              <option value="周師父">周師父</option>
-            </select>
-            <p class="selected-lunch">尚未選擇</p>
+            <div class="day-header">
+              <h3>🗓️ 星期五</h3>
+              <span class="date-badge" id="fridayDate"></span>
+            </div>
+            <p class="selected-lunch no-selection" id="fridayLunch">尚未選擇</p>
+            <p class="vote-info" id="fridayVotes"></p>
           </div>
         </div>
       </section>
@@ -95,8 +90,116 @@
     </div>
 
     <!-- 引入外部 JavaScript 檔案 -->
-    <script src="script.js"></script>
+    <!--<script src="script.js"></script>-->
 
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+      import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+
+      const firebaseConfig = {
+          apiKey: "AIzaSyAdo-mbq_BQ5tqY4nvscVNtah24Mb8ohmU",
+          authDomain: "realtimevote-f8b6d.firebaseapp.com",
+          databaseURL: "https://realtimevote-f8b6d-default-rtdb.firebaseio.com/",
+          projectId: "realtimevote-f8b6d",
+          storageBucket: "realtimevote-f8b6d.firebasestorage.app",
+          messagingSenderId: "44615577610",
+          appId: "1:44615577610:web:1bf827f2899ae2550d6ff3",
+          measurementId: "G-MW1RJZSC0E"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+      const weeklyRef = ref(database, 'weekly');
+
+      // 取得本週的日期
+      function getWeekDates() {
+        const now = new Date();
+        const dayOfWeek = now.getDay(); // 0=週日, 1=週一, ..., 6=週六
+        
+        // 計算本週一的日期
+        const monday = new Date(now);
+        const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 如果是週日,往前推6天
+        monday.setDate(now.getDate() + diff);
+        
+        const dates = {};
+        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+        
+        days.forEach((day, index) => {
+          const date = new Date(monday);
+          date.setDate(monday.getDate() + index);
+          dates[day] = date.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' });
+        });
+        
+        return dates;
+      }
+
+      // 顯示日期
+      const weekDates = getWeekDates();
+      document.getElementById('mondayDate').textContent = weekDates.monday;
+      document.getElementById('tuesdayDate').textContent = weekDates.tuesday;
+      document.getElementById('wednesdayDate').textContent = weekDates.wednesday;
+      document.getElementById('thursdayDate').textContent = weekDates.thursday;
+      document.getElementById('fridayDate').textContent = weekDates.friday;
+
+      // 監聽每週菜單資料
+      onValue(weeklyRef, (snapshot) => {
+        const weeklyData = snapshot.val();
+        
+        // 隱藏載入訊息，顯示菜單容器
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('weekContainer').style.display = 'block';
+
+        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+        const dayNames = {
+          'monday': '星期一',
+          'tuesday': '星期二',
+          'wednesday': '星期三',
+          'thursday': '星期四',
+          'friday': '星期五'
+        };
+
+        days.forEach(day => {
+          const lunchElement = document.getElementById(`${day}Lunch`);
+          const votesElement = document.getElementById(`${day}Votes`);
+          
+          if (weeklyData && weeklyData[day]) {
+            const data = weeklyData[day];
+            lunchElement.textContent = `🍱 ${data.restaurantName}`;
+            lunchElement.classList.remove('no-selection');
+            votesElement.textContent = `得票數：${data.votes} 票 | 投票日期：${data.date}`;
+          } else {
+            lunchElement.textContent = '尚未選擇';
+            lunchElement.classList.add('no-selection');
+            votesElement.textContent = '';
+          }
+        });
+      });
+
+      // 高亮顯示今天
+      function highlightToday() {
+        const now = new Date();
+        const dayOfWeek = now.getDay();
+        
+        const dayMap = {
+          1: 'monday',
+          2: 'tuesday',
+          3: 'wednesday',
+          4: 'thursday',
+          5: 'friday'
+        };
+        
+        const todayKey = dayMap[dayOfWeek];
+        
+        if (todayKey) {
+          const todayElement = document.getElementById(`${todayKey}Lunch`).parentElement;
+          todayElement.style.border = '3px solid #4CAF50';
+          todayElement.style.background = '#f1f8e9';
+        }
+      }
+
+      highlightToday();
+    </script>
+    
   </body>
 
 </html>

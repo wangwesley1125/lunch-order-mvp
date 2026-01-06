@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang = "zh-TW">
+  <head>
+    <meta charset = "utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>午餐點餐系統 - 新增店家</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+
+  <body>
+    <!-- Header -->
+    <div class = "header">
+      <h1>🍱 午餐點餐系統</h1>
+      <p>你的午餐救星 🌟</p>
+    </div>
+
+    <!-- Navigation Bar -->
+    <div class = "navbar">
+      <a href="index.html">🗳️ 投票中</a>
+      <a href="weekly.html">📅 本週吃什麼</a>
+      <a href="restaurants.html">🏪 便當店家</a>
+      <a href="add_restaurants.html" class="active"> ➕ 新增店家</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class = "main">
+      <section class="add-restaurant-section">
+            <h2>➕ 新增店家</h2>
+
+            <!-- 登入提示 -->
+            <div id="loginNotice" class="login-notice">
+                <h3>🔐 請先登入</h3>
+                <p>您需要登入 Google 帳號才能新增店家 😅</p>
+                <button id="googleSigninBtn" class="login-btn">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                    使用 Google 登入
+                </button>
+            </div>
+
+            <!-- 使用者資訊 -->
+            <div id="userInfoSection" class="user-info hidden">
+                <div class="user-info-left">
+                    <img id="userAvatar" class="user-avatar" src="" alt="User Avatar">
+                    <div>
+                        <div id="userName" style="font-weight: bold;"></div>
+                        <div id="userEmail" style="font-size: 14px; color: #666;"></div>
+                    </div>
+                </div>
+                <button class="logout-btn" id="logoutBtn">登出</button>
+            </div>
+
+            <!-- 新增店家表單 -->
+            <div id="formContainer" class="form-container hidden">
+                <form id="addRestaurantForm">
+                    <!-- 店家名稱 -->
+                    <div class="form-group">
+                        <label for="restaurantName">店家名稱 <span class="required">*</span></label>
+                        <input type="text" id="restaurantName" name="restaurantName" required placeholder="例如：王大偉排骨飯">
+                    </div>
+
+                    <!-- 店家類型 -->
+                    <div class="form-group">
+                        <label for="restaurantType">店家類型 <span class="required">*</span></label>
+                        <select id="restaurantType" name="restaurantType" required>
+                            <option value="">請選擇店家類型</option>
+                            <option value="便當">便當</option>
+                            <option value="麵食">麵食</option>
+                            <option value="水餃鍋貼">水餃鍋貼</option>
+                            <option value="小吃">小吃</option>
+                            <option value="飯類">飯類</option>
+                            <option value="素食">素食</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+
+                    <!-- 店家照片 URL -->
+                    <div class="form-group">
+                        <label for="restaurantImage">店家照片網址</label>
+                        <input type="url" id="restaurantImage" name="restaurantImage" placeholder="https://example.com/image.jpg">
+                        <p class="help-text">請提供店家照片的網址（選填）</p>
+                    </div>
+
+                    <!-- 店家地址 -->
+                    <div class="form-group">
+                        <label for="restaurantAddress">店家地址</label>
+                        <input type="text" id="restaurantAddress" name="restaurantAddress" placeholder="例如：高雄市三民區中正路123號">
+                    </div>
+
+                    <!-- 電話 -->
+                    <div class="form-group">
+                        <label for="restaurantPhone">電話</label>
+                        <input type="tel" id="restaurantPhone" name="restaurantPhone" placeholder="例如：07-1234567">
+                    </div>
+
+                    <!-- 公休日 -->
+                    <div class="form-group">
+                        <label>公休日</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="day1" name="closedDays" value="星期一">
+                                <label for="day1">星期一</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="day2" name="closedDays" value="星期二">
+                                <label for="day2">星期二</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="day3" name="closedDays" value="星期三">
+                                <label for="day3">星期三</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="day4" name="closedDays" value="星期四">
+                                <label for="day4">星期四</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="day5" name="closedDays" value="星期五">
+                                <label for="day5">星期五</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="day6" name="closedDays" value="星期六">
+                                <label for="day6">星期六</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="day7" name="closedDays" value="星期日">
+                                <label for="day7">星期日</label>
+                            </div>
+                        </div>
+                        <p class="help-text">請勾選店家的公休日（可複選）</p>
+                    </div>
+
+                    <!-- 備註 -->
+                    <div class="form-group">
+                        <label for="restaurantNote">備註</label>
+                        <textarea id="restaurantNote" name="restaurantNote" placeholder="例如：推薦招牌雞腿飯、營業時間 11:00-14:00"></textarea>
+                        <p class="help-text">可以填寫推薦菜色、營業時間等資訊</p>
+                    </div>
+
+                    <!-- 提交按鈕 -->
+                    <button type="submit" class="submit-btn" id="submitBtn">確定新增</button>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <div class = "footer">
+      <p>版權所有 &copy; 2026 午餐點餐系統</p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+        import { getDatabase, ref, push, set, update } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+
+        export const firebaseConfig = {
+            apiKey: "AIzaSyAdo-mbq_BQ5tqY4nvscVNtah24Mb8ohmU",
+            authDomain: "realtimevote-f8b6d.firebaseapp.com",
+            databaseURL: "https://realtimevote-f8b6d-default-rtdb.firebaseio.com/",
+            projectId: "realtimevote-f8b6d",
+            storageBucket: "realtimevote-f8b6d.firebasestorage.app",
+            messagingSenderId: "44615577610",
+            appId: "1:44615577610:web:1bf827f2899ae2550d6ff3",
+            measurementId: "G-MW1RJZSC0E"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        let currentUser = null;
+        let isEditMode = false;
+        let editRestaurantId = null;
+        let editRestaurantData = null;
+
+        // 檢查是否為編輯模式
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('edit')) {
+            isEditMode = true;
+            editRestaurantId = urlParams.get('edit');
+            
+            // 從 sessionStorage 讀取店家資料
+            const storedData = sessionStorage.getItem('editRestaurant');
+            if (storedData) {
+                editRestaurantData = JSON.parse(storedData);
+                // 更改頁面標題
+                document.getElementById('pageTitle').innerHTML = '✏️ 編輯店家';
+                document.getElementById('submitBtn').textContent = '確定更新';
+            } else {
+                alert('找不到店家資料，將返回店家列表');
+                window.location.href = 'restaurants.html';
+            }
+        }
+
+        // 監聽使用者登入狀態
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                showUserInfo(user);
+                document.getElementById('loginNotice').classList.add('hidden');
+                document.getElementById('userInfoSection').classList.remove('hidden');
+                document.getElementById('formContainer').classList.remove('hidden');
+                
+                // 如果是編輯模式，填入資料
+                if (isEditMode && editRestaurantData) {
+                    fillFormWithData(editRestaurantData);
+                }
+            } else {
+                currentUser = null;
+                document.getElementById('loginNotice').classList.remove('hidden');
+                document.getElementById('userInfoSection').classList.add('hidden');
+                document.getElementById('formContainer').classList.add('hidden');
+            }
+        });
+
+        // 填入表單資料（編輯模式）
+        function fillFormWithData(data) {
+            document.getElementById('restaurantName').value = data.name || '';
+            document.getElementById('restaurantType').value = data.type || '';
+            document.getElementById('restaurantImage').value = data.imageUrl || '';
+            document.getElementById('restaurantAddress').value = data.address || '';
+            document.getElementById('restaurantPhone').value = data.phone || '';
+            document.getElementById('restaurantNote').value = data.note || '';
+            
+            // 勾選公休日
+            if (data.closedDays && Array.isArray(data.closedDays)) {
+                data.closedDays.forEach(day => {
+                    const checkbox = document.querySelector(`input[name="closedDays"][value="${day}"]`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                    }
+                });
+            }
+        }
+
+        // Google 登入
+        document.getElementById('googleSigninBtn').addEventListener('click', async () => {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                
+                if (!user.email.endsWith('@gmail.com')) {
+                    alert('請使用 Gmail 帳號登入！');
+                    await signOut(auth);
+                    return;
+                }
+            } catch (error) {
+                console.error('登入失敗:', error);
+                alert('登入失敗：' + error.message);
+            }
+        });
+
+        // 登出
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error('登出失敗:', error);
+            }
+        });
+
+        // 顯示使用者資訊
+        function showUserInfo(user) {
+            document.getElementById('userName').textContent = user.displayName || '使用者';
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('userAvatar').src = user.photoURL || 'https://via.placeholder.com/50';
+        }
+
+        // 表單提交
+        document.getElementById('addRestaurantForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!currentUser) {
+                alert('請先登入！');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = isEditMode ? '更新中...' : '新增中...';
+
+            // 收集公休日
+            const closedDays = [];
+            document.querySelectorAll('input[name="closedDays"]:checked').forEach(checkbox => {
+                closedDays.push(checkbox.value);
+            });
+
+            // 收集表單資料
+            const restaurantData = {
+                name: document.getElementById('restaurantName').value.trim(),
+                type: document.getElementById('restaurantType').value,
+                imageUrl: document.getElementById('restaurantImage').value.trim() || 'https://via.placeholder.com/400x300?text=無圖片',
+                address: document.getElementById('restaurantAddress').value.trim(),
+                phone: document.getElementById('restaurantPhone').value.trim(),
+                closedDays: closedDays,
+                note: document.getElementById('restaurantNote').value.trim(),
+                isActive: true
+            };
+
+            try {
+                if (isEditMode) {
+                    // 編輯模式 - 更新現有店家
+                    restaurantData.updatedAt = new Date().toISOString();
+                    restaurantData.updatedBy = currentUser.email;
+                    restaurantData.updatedByName = currentUser.displayName || '使用者';
+                    
+                    // 保留原本的建立資訊
+                    restaurantData.createdAt = editRestaurantData.createdAt;
+                    restaurantData.createdBy = editRestaurantData.createdBy;
+                    restaurantData.createdByName = editRestaurantData.createdByName;
+                    
+                    const restaurantRef = ref(database, `restaurants/${editRestaurantId}`);
+                    await update(restaurantRef, restaurantData);
+                    
+                    alert('店家更新成功！');
+                    
+                    // 清除 sessionStorage
+                    sessionStorage.removeItem('editRestaurant');
+                    
+                } else {
+                    // 新增模式
+                    restaurantData.createdAt = new Date().toISOString();
+                    restaurantData.createdBy = currentUser.email;
+                    restaurantData.createdByName = currentUser.displayName || '使用者';
+                    
+                    const restaurantsRef = ref(database, 'restaurants');
+                    const newRestaurantRef = push(restaurantsRef);
+                    await set(newRestaurantRef, restaurantData);
+                    
+                    alert('店家新增成功！');
+                }
+                
+                // 導向到店家列表頁面
+                setTimeout(() => {
+                    window.location.href = 'restaurants.html';
+                }, 1000);
+
+            } catch (error) {
+                console.error(isEditMode ? '更新失敗:' : '新增失敗:', error);
+                alert((isEditMode ? '更新失敗' : '新增失敗') + '，請稍後再試：' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = isEditMode ? '確定更新' : '確定新增';
+            }
+        });
+    </script>
+
+  </body>
+</html>

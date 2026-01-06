@@ -31,6 +31,28 @@ html, body {
   font-size: clamp(0.9rem, 2vw, 1rem);
 }
 
+.voting-closed {
+        background-color: #ffebee;
+        border: 2px solid #e57373;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+        text-align: center;
+      }
+      .voting-closed h3 {
+        color: #d32f2f;
+        margin: 0 0 10px 0;
+      }
+      .time-display {
+        background: #e3f2fd;
+        padding: 10px;
+        border-radius: 5px;
+        margin: 15px 0;
+        text-align: center;
+        font-weight: bold;
+        color: #1976d2;
+      }
+
 .navbar {
   position: fixed;
   top: 105px;
@@ -296,6 +318,29 @@ html, body {
   background-color: #ff9500;
 }
 
+.vote-button.selected {
+  background-color: #28a745 !important;
+}
+
+.vote-button.selected:hover {
+  background-color: #218838 !important;
+}
+
+/* 未選擇的按鈕 - 保持橘色 */
+.vote-button.not-selected {
+  background-color: #ffa748;
+}
+
+.vote-button.not-selected:hover {
+  background-color: #ff9500;
+}
+
+/* 選中的投票選項卡片 - 綠色邊框 */
+.vote-option.selected {
+  border: 3px solid #28a745;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
 /* 平板尺寸 */
 @media (max-width: 1024px) {
   .vote-container {
@@ -553,4 +598,516 @@ html, body {
 
 .hidden {
   display: none !important;
+}
+
+/* 新增店家 CSS */
+.add-restaurant-section {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.form-container {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.required {
+    color: red;
+    margin-left: 4px;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+}
+
+.checkbox-item input[type="checkbox"] {
+    width: auto;
+    margin-right: 5px;
+}
+
+.submit-btn {
+    background: #4CAF50;
+    color: white;
+    padding: 15px 40px;
+    border: none;
+    border-radius: 5px;
+    font-size: 18px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.submit-btn:hover {
+    background: #45a049;
+}
+
+.submit-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.help-text {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.login-notice {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.login-notice h3 {
+    color: #856404;
+    margin-bottom: 10px;
+}
+
+.login-btn {
+    display: inline-flex;
+    align-items: center;
+    background: white;
+    border: 1px solid #bc661a;
+    border-radius: 4px;
+    padding: 12px 24px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    color: #3c4043;
+    transition: all 0.3s;
+}
+
+.login-btn:hover {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+
+.login-btn img {
+    width: 20px;
+    height: 20px;
+}
+
+.user-info {
+    background: #e8f5e9;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-info-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.logout-btn {
+    background: #f44336;
+    color: white;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.logout-btn:hover {
+    background: #da190b;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.cancel-btn {
+    background: #757575;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    flex: 1;
+}
+
+.cancel-btn:hover {
+    background: #616161;
+}
+
+.submit-btn {
+    flex: 2;
+}
+
+/* 便當店家頁面*/
+.loading {
+    text-align: center;
+    padding: 50px;
+    font-size: 18px;
+    color: #666;
+}
+
+.no-restaurants {
+    text-align: center;
+    padding: 50px;
+    background: #f9f9f9;
+    border-radius: 10px;
+    margin: 20px;
+}
+
+.no-restaurants h3 {
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.no-restaurants p {
+    color: #999;
+    margin-bottom: 20px;
+}
+
+.add-restaurant-btn {
+    display: inline-block;
+    background: #4CAF50;
+    color: white;
+    padding: 12px 30px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.add-restaurant-btn:hover {
+    background: #45a049;
+}
+
+.restaurant-info {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #666;
+}
+
+.restaurant-info p {
+    margin: 5px 0;
+}
+
+.restaurant-type {
+    display: inline-block;
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.closed-days {
+    color: #f44336;
+    font-size: 13px;
+}
+
+.restaurant-note {
+    background: #fff3cd;
+    padding: 8px;
+    border-radius: 5px;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #856404;
+}
+
+.button-group {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.button {
+    flex: 1;
+    min-width: 80px;
+    text-align: center;
+}
+
+.button-edit {
+    background: #2196F3;
+}
+
+.button-edit:hover {
+    background: #0b7dda;
+}
+
+.button-delete {
+    background: #f44336;
+}
+
+.button-delete:hover {
+    background: #da190b;
+}
+
+/* 登入狀態列 */
+.auth-bar {
+    background: #f5f5f5;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.auth-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.auth-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.auth-name {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.login-btn-small {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.login-btn-small:hover {
+    background: #45a049;
+}
+
+.logout-btn-small {
+    background: #757575;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.logout-btn-small:hover {
+    background: #616161;
+}
+
+/*新店家的樣式 new*/
+.new-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+    animation: pulse 2s infinite;
+    z-index: 10;
+}
+      
+@keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+    }
+    50% {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(255, 107, 107, 0.6);
+    }
+}
+
+.restaurant-card {
+  position: relative;
+}
+
+/* 編輯彈窗樣式 */
+.modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: #fff;
+  margin: 20px;
+  padding: 30px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 20px;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  clear: both;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #ff6b35;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: auto;
+  margin-right: 5px;
+  cursor: pointer;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 25px;
+}
+
+.button-cancel {
+  background-color: #6c757d;
+}
+
+.button-cancel:hover {
+  background-color: #5a6268;
+}
+
+@media (max-width: 768px) {
+    .navbar {
+      flex-direction: column;
+    }
+
+    .navbar a {
+      width: 100%;
+      text-align: center;
+    }
+
+    .restaurant-list {
+      grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+      width: 95%;
+      padding: 20px;
+      margin: 10px;
+    }
+        
+    .checkbox-group {
+      flex-direction: column;
+      gap: 8px;
+    }
 }
