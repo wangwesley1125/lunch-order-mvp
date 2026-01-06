@@ -91,8 +91,17 @@
       import { getDatabase, ref, onValue, set, get, runTransaction } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
       import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
 
-      // 從外部檔案引入 Firebase 設定
-      import { firebaseConfig } from './firebase-config.js';
+      // import { firebaseConfig } from './firebase-config.js';
+      export const firebaseConfig = {
+          apiKey: "AIzaSyAdo-mbq_BQ5tqY4nvscVNtah24Mb8ohmU",
+          authDomain: "realtimevote-f8b6d.firebaseapp.com",
+          databaseURL: "https://realtimevote-f8b6d-default-rtdb.firebaseio.com/",
+          projectId: "realtimevote-f8b6d",
+          storageBucket: "realtimevote-f8b6d.firebasestorage.app",
+          messagingSenderId: "44615577610",
+          appId: "1:44615577610:web:1bf827f2899ae2550d6ff3",
+          measurementId: "G-MW1RJZSC0E"
+      };
 
       const app = initializeApp(firebaseConfig);
       const database = getDatabase(app);
