@@ -28,60 +28,30 @@
 
     <!-- Main Content -->
     <div class = "main">
-      <section class = "weekly-menu">
-        <h2>📅 本週午餐菜單</h2>
+      <div id="loading" class="loading">
+        載入菜單中...
+      </div>
+
+      <div class="weeks-wrapper" id="weeksWrapper" style="display: none;">
+        <!-- 每隔兩周清除資料-->
+        <div>
+          <p style="font-size: 0.9rem; color: #555; text-align: center; margin-bottom: 20px;">
+            每隔兩週，系統會自動清除本週與下週的菜單資料，讓大家重新投票選擇午餐！
+          </p>
+        </div>
         
-        <div id="loading" class="loading">
-          載入本週菜單中...
+        <!-- 本週 -->
+        <div class="week-section">
+          <h2 class="week-title">本週菜單</h2>
+          <div class="week-container" id="thisWeekContainer"></div>
         </div>
 
-        <div class="week-container" id="weekContainer" style="display: none;">
-          <div class="day-menu">
-            <div class="day-header">
-              <h3>🗓️ 星期一</h3>
-              <span class="date-badge" id="mondayDate"></span>
-            </div>
-            <p class="selected-lunch no-selection" id="mondayLunch">尚未選擇</p>
-            <p class="vote-info" id="mondayVotes"></p>
-          </div>
-          
-          <div class="day-menu">
-            <div class="day-header">
-              <h3>🗓️ 星期二</h3>
-              <span class="date-badge" id="tuesdayDate"></span>
-            </div>
-            <p class="selected-lunch no-selection" id="tuesdayLunch">尚未選擇</p>
-            <p class="vote-info" id="tuesdayVotes"></p>
-          </div>
-          
-          <div class="day-menu">
-            <div class="day-header">
-              <h3>🗓️ 星期三</h3>
-              <span class="date-badge" id="wednesdayDate"></span>
-            </div>
-            <p class="selected-lunch no-selection" id="wednesdayLunch">尚未選擇</p>
-            <p class="vote-info" id="wednesdayVotes"></p>
-          </div>
-          
-          <div class="day-menu">
-            <div class="day-header">
-              <h3>🗓️ 星期四</h3>
-              <span class="date-badge" id="thursdayDate"></span>
-            </div>
-            <p class="selected-lunch no-selection" id="thursdayLunch">尚未選擇</p>
-            <p class="vote-info" id="thursdayVotes"></p>
-          </div>
-          
-          <div class="day-menu">
-            <div class="day-header">
-              <h3>🗓️ 星期五</h3>
-              <span class="date-badge" id="fridayDate"></span>
-            </div>
-            <p class="selected-lunch no-selection" id="fridayLunch">尚未選擇</p>
-            <p class="vote-info" id="fridayVotes"></p>
-          </div>
+        <!-- 下週 -->
+        <div class="week-section">
+          <h2 class="week-title">下週菜單</h2>
+          <div class="week-container" id="nextWeekContainer"></div>
         </div>
-      </section>
+      </div>
     </div>
 
     <!-- Footer -->
@@ -110,123 +80,312 @@
       const app = initializeApp(firebaseConfig);
       const database = getDatabase(app);
       const weeklyRef = ref(database, 'weekly');
+      const votesRef = ref(database, 'votes');
+      const restaurantsRef = ref(database, 'restaurants');
 
-      // 取得本週的日期
-      function getWeekDates() {
-        const now = new Date();
-        const dayOfWeek = now.getDay(); // 0=週日, 1=週一, ..., 6=週六
-        
-        // 計算本週一的日期
-        const monday = new Date(now);
-        const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 如果是週日,往前推6天
-        monday.setDate(now.getDate() + diff);
-        
-        const dates = {};
-        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-        
-        days.forEach((day, index) => {
-          const date = new Date(monday);
-          date.setDate(monday.getDate() + index);
-          dates[day] = date.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' });
-        });
-        
-        return dates;
+      const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
+
+      // 取得本週一的日期
+      function getMonday(date) {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = day === 0 ? -6 : 1 - day;
+        d.setDate(d.getDate() + diff);
+        d.setHours(0, 0, 0, 0);
+        return d;
       }
 
-      // 顯示日期
-      const weekDates = getWeekDates();
-      document.getElementById('mondayDate').textContent = weekDates.monday;
-      document.getElementById('tuesdayDate').textContent = weekDates.tuesday;
-      document.getElementById('wednesdayDate').textContent = weekDates.wednesday;
-      document.getElementById('thursdayDate').textContent = weekDates.thursday;
-      document.getElementById('fridayDate').textContent = weekDates.friday;
+      // 取得指定週的所有工作日
+      function getWeekDays(mondayDate) {
+        const days = [];
+        for (let i = 0; i < 5; i++) {
+          const date = new Date(mondayDate);
+          date.setDate(mondayDate.getDate() + i);
+          days.push(date);
+        }
+        return days;
+      }
 
-      // 監聽每週菜單資料
-      onValue(weeklyRef, (snapshot) => {
-        const weeklyData = snapshot.val();
+      // 格式化日期為 YYYY-MM-DD
+      function formatDate(date) {
+        return date.toISOString().split('T')[0];
+      }
+
+      // 創建日期卡片
+      function createDayCard(date, isToday, isPast) {
+        const dateStr = formatDate(date);
+        const dayOfWeek = date.getDay();
         
-        // 隱藏載入訊息，顯示菜單容器
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('weekContainer').style.display = 'block';
+        const card = document.createElement('div');
+        card.className = 'day-menu';
+        if (isToday) card.classList.add('today');
+        if (isPast) card.classList.add('past');
+        card.setAttribute('data-date', dateStr);
 
-        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-        const dayNames = {
-          'monday': '星期一',
-          'tuesday': '星期二',
-          'wednesday': '星期三',
-          'thursday': '星期四',
-          'friday': '星期五'
-        };
+        const header = document.createElement('div');
+        header.className = 'day-header';
 
-        days.forEach(day => {
-          const lunchElement = document.getElementById(`${day}Lunch`);
-          const votesElement = document.getElementById(`${day}Votes`);
-          
-          if (weeklyData && weeklyData[day]) {
-            const data = weeklyData[day];
-            lunchElement.textContent = `🍱 ${data.restaurantName}`;
-            lunchElement.classList.remove('no-selection');
-            votesElement.textContent = `得票數：${data.votes} 票 | 投票日期：${data.date}`;
-          } else {
-            lunchElement.textContent = '尚未選擇';
-            lunchElement.classList.add('no-selection');
-            votesElement.textContent = '';
+        const title = document.createElement('h3');
+        title.innerHTML = `星期${dayNames[dayOfWeek]}`;
+        if (isToday) {
+          title.innerHTML += '<span class="today-indicator"></span>';
+        }
+
+        const dateBadge = document.createElement('span');
+        dateBadge.className = 'date-badge';
+        dateBadge.textContent = `${date.getMonth() + 1}/${date.getDate()}`;
+
+        header.appendChild(title);
+        header.appendChild(dateBadge);
+
+        const lunch = document.createElement('p');
+        lunch.className = 'selected-lunch no-selection';
+        lunch.textContent = '尚未選擇';
+
+        const voteInfo = document.createElement('p');
+        voteInfo.className = 'vote-info';
+
+        card.appendChild(header);
+        card.appendChild(lunch);
+        card.appendChild(voteInfo);
+
+        return card;
+      }
+
+      // 更新卡片內容
+      async function updateDayCard(card, dateStr) {
+        const lunchElement = card.querySelector('.selected-lunch');
+        const voteInfoElement = card.querySelector('.vote-info');
+
+        try {
+          // 檢查 weekly 資料
+          const weeklySnapshot = await get(ref(database, 'weekly'));
+          const weeklyData = weeklySnapshot.val();
+
+          // 找到對應日期的記錄
+          let foundInWeekly = false;
+          if (weeklyData) {
+            for (const [day, data] of Object.entries(weeklyData)) {
+              if (data.date === dateStr) {
+                lunchElement.textContent = `🍱 ${data.restaurantName}`;
+                lunchElement.classList.remove('no-selection');
+                voteInfoElement.textContent = `得票數：${data.votes} 票`;
+                foundInWeekly = true;
+                break;
+              }
+            }
           }
-        });
-      });
 
-      // 高亮顯示今天
-      function highlightToday() {
-        const now = new Date();
-        const dayOfWeek = now.getDay();
-        
-        const dayMap = {
-          1: 'monday',
-          2: 'tuesday',
-          3: 'wednesday',
-          4: 'thursday',
-          5: 'friday'
-        };
-        
-        const todayKey = dayMap[dayOfWeek];
-        
-        if (todayKey) {
-          const todayElement = document.getElementById(`${todayKey}Lunch`).parentElement;
-          todayElement.style.border = '3px solid #4CAF50';
-          todayElement.style.background = '#f1f8e9';
+          // 如果 weekly 沒有，檢查當天投票結果
+          if (!foundInWeekly) {
+            const votesSnapshot = await get(ref(database, `votes/${dateStr}`));
+            const votes = votesSnapshot.val();
+
+            if (votes) {
+              // 找出最高票
+              let maxVotes = 0;
+              let winningRestaurant = null;
+
+              for (const [restaurantId, voteCount] of Object.entries(votes)) {
+                if (voteCount > maxVotes) {
+                  maxVotes = voteCount;
+                  winningRestaurant = restaurantId;
+                }
+              }
+
+              if (winningRestaurant && maxVotes > 0) {
+                const restaurantSnapshot = await get(ref(database, `restaurants/${winningRestaurant}`));
+                const restaurantData = restaurantSnapshot.val();
+
+                lunchElement.textContent = `🍱 ${restaurantData?.name || winningRestaurant}`;
+                lunchElement.classList.remove('no-selection');
+                voteInfoElement.textContent = `得票數：${maxVotes} 票`;
+              } else {
+                lunchElement.textContent = '尚未選擇';
+                lunchElement.classList.add('no-selection');
+                voteInfoElement.textContent = '';
+              }
+            } else {
+              lunchElement.textContent = '尚未選擇';
+              lunchElement.classList.add('no-selection');
+              voteInfoElement.textContent = '';
+            }
+          }
+        } catch (error) {
+          console.error('更新卡片失敗:', error);
         }
       }
 
-      highlightToday();
+      // 檢查是否所有10個格子都填滿了
+      async function checkAndClearIfFull() {
+        try {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
 
-      // 動態調整位置，避免有空隙
+          const thisWeekMonday = getMonday(today);
+          const nextWeekMonday = new Date(thisWeekMonday);
+          nextWeekMonday.setDate(thisWeekMonday.getDate() + 7);
+
+          const thisWeekDays = getWeekDays(thisWeekMonday);
+          const nextWeekDays = getWeekDays(nextWeekMonday);
+          const allDays = [...thisWeekDays, ...nextWeekDays];
+
+          // 檢查每一天是否都有資料
+          let filledCount = 0;
+
+          for (const date of allDays) {
+            const dateStr = formatDate(date);
+            
+            // 先檢查 weekly
+            const weeklySnapshot = await get(ref(database, 'weekly'));
+            const weeklyData = weeklySnapshot.val();
+            
+            let hasData = false;
+            
+            if (weeklyData) {
+              for (const [day, data] of Object.entries(weeklyData)) {
+                if (data.date === dateStr) {
+                  hasData = true;
+                  break;
+                }
+              }
+            }
+            
+            // 如果 weekly 沒有，檢查 votes
+            if (!hasData) {
+              const votesSnapshot = await get(ref(database, `votes/${dateStr}`));
+              const votes = votesSnapshot.val();
+              
+              if (votes) {
+                // 檢查是否有任何投票
+                for (const [restaurantId, voteCount] of Object.entries(votes)) {
+                  if (voteCount > 0) {
+                    hasData = true;
+                    break;
+                  }
+                }
+              }
+            }
+            
+            if (hasData) {
+              filledCount++;
+            }
+          }
+
+          // 如果所有10個格子都填滿了，清空資料
+          if (filledCount === 10) {
+            console.log('🎉 所有10個格子都填滿了！準備清空資料...');
+            
+            // 清空 weekly 資料
+            await remove(weeklyRef);
+            
+            // 清空所有日期的 votes 資料
+            for (const date of allDays) {
+              const dateStr = formatDate(date);
+              await remove(ref(database, `votes/${dateStr}`));
+              await remove(ref(database, `voters/${dateStr}`));
+            }
+            
+            console.log('✅ 資料已清空，等待下一輪！');
+            
+            // 重新載入頁面以顯示空白狀態
+            setTimeout(() => {
+              location.reload();
+            }, 1000);
+          }
+        } catch (error) {
+          console.error('檢查清空失敗:', error);
+        }
+      }
+
+      // 初始化頁面
+      async function initializePage() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const thisWeekMonday = getMonday(today);
+        const nextWeekMonday = new Date(thisWeekMonday);
+        nextWeekMonday.setDate(thisWeekMonday.getDate() + 7);
+
+        const thisWeekDays = getWeekDays(thisWeekMonday);
+        const nextWeekDays = getWeekDays(nextWeekMonday);
+
+        const thisWeekContainer = document.getElementById('thisWeekContainer');
+        const nextWeekContainer = document.getElementById('nextWeekContainer');
+
+        // 創建本週卡片
+        thisWeekDays.forEach(date => {
+          const isToday = formatDate(date) === formatDate(today);
+          const isPast = date < today;
+          const card = createDayCard(date, isToday, isPast);
+          thisWeekContainer.appendChild(card);
+        });
+
+        // 創建下週卡片
+        nextWeekDays.forEach(date => {
+          const card = createDayCard(date, false, false);
+          nextWeekContainer.appendChild(card);
+        });
+
+        // 更新所有卡片內容
+        const allCards = document.querySelectorAll('.day-menu');
+        for (const card of allCards) {
+          const dateStr = card.getAttribute('data-date');
+          await updateDayCard(card, dateStr);
+        }
+
+        // 檢查是否需要清空
+        await checkAndClearIfFull();
+
+        // 隱藏載入訊息
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('weeksWrapper').style.display = 'block';
+      }
+
+      // 監聽資料變化
+      onValue(weeklyRef, async () => {
+        const allCards = document.querySelectorAll('.day-menu');
+        for (const card of allCards) {
+          const dateStr = card.getAttribute('data-date');
+          await updateDayCard(card, dateStr);
+        }
+        // 每次資料變化時檢查是否需要清空
+        await checkAndClearIfFull();
+      });
+
+      onValue(votesRef, async () => {
+        const allCards = document.querySelectorAll('.day-menu');
+        for (const card of allCards) {
+          const dateStr = card.getAttribute('data-date');
+          await updateDayCard(card, dateStr);
+        }
+        // 每次資料變化時檢查是否需要清空
+        await checkAndClearIfFull();
+      });
+
+      // 初始化
+      initializePage();
+
+      // 動態調整位置
       function adjustPositions() {
         const header = document.querySelector('.header');
         const navbar = document.querySelector('.navbar');
         const main = document.querySelector('.main');
-          
+        
         if (header && navbar) {
-          // 讓 navbar 緊貼 header 底部
           const headerRect = header.getBoundingClientRect();
-          const headerBottom = headerRect.top + headerRect.height;
-          navbar.style.top = headerBottom + 'px';
+          navbar.style.top = headerRect.bottom + 'px';
         }
-          
+        
         if (navbar && main) {
-          // 讓 main 緊貼 navbar 底部
           const navbarRect = navbar.getBoundingClientRect();
-          const navbarBottom = navbarRect.top + navbarRect.height;
-          main.style.top = navbarBottom + 'px';
+          main.style.top = navbarRect.bottom + 'px';
         }
       }
 
-      // 頁面載入後調整
       window.addEventListener('load', adjustPositions);
-
-      // 視窗大小改變時調整
       window.addEventListener('resize', adjustPositions);
 
-      // 使用 ResizeObserver 監聽 header 和 navbar 高度變化
       const header = document.querySelector('.header');
       const navbar = document.querySelector('.navbar');
 
