@@ -32,26 +32,28 @@ html, body {
 }
 
 .voting-closed {
-        background-color: #ffebee;
-        border: 2px solid #e57373;
-        border-radius: 8px;
-        padding: 20px;
-        margin: 20px 0;
-        text-align: center;
-      }
-      .voting-closed h3 {
-        color: #d32f2f;
-        margin: 0 0 10px 0;
-      }
-      .time-display {
-        background: #e3f2fd;
-        padding: 10px;
-        border-radius: 5px;
-        margin: 15px 0;
-        text-align: center;
-        font-weight: bold;
-        color: #1976d2;
-      }
+  background-color: #ffebee;
+  border: 2px solid #e57373;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.voting-closed h3 {
+  color: #d32f2f;
+  margin: 0 0 10px 0;
+}
+
+.time-display {
+  background: #e3f2fd;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 15px 0;
+  text-align: center;
+  font-weight: bold;
+  color: #1976d2;
+}
 
 .navbar {
   position: fixed;
@@ -61,23 +63,29 @@ html, body {
   overflow: hidden;
   background-color: #ffa748;
   z-index: 999;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
 }
 
 .navbar a {
-  flex: 1 1 auto;
-  min-width: 100px;
   display: block;
   color: white;
   text-align: center;
-  padding: 14px 20px;
+  padding: 14px 10px;
   text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .navbar a:hover {
   background-color: #ff9500;
   color: black;
+}
+
+.navbar a.active {
+  background-color: #ff9500;
+  font-weight: bold;
 }
 
 .main {
@@ -105,6 +113,7 @@ html, body {
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s;
+  position: relative;
 }
 
 .restaurant-card:hover {
@@ -177,11 +186,12 @@ html, body {
 
   .navbar {
     top: 95px;
+    grid-template-columns: repeat(4, 1fr);
   }
 
   .navbar a {
-    padding: 12px 15px;
-    font-size: 0.9rem;
+    padding: 12px 8px;
+    font-size: 0.85rem;
   }
 
   .main {
@@ -213,12 +223,12 @@ html, body {
 
   .navbar {
     top: 75px;
+    grid-template-columns: repeat(4, 1fr);
   }
 
   .navbar a {
-    flex: 1 1 33.333%;
-    padding: 10px 8px;
-    font-size: 0.85rem;
+    padding: 10px 5px;
+    font-size: 0.75rem;
   }
 
   .main {
@@ -326,7 +336,6 @@ html, body {
   background-color: #218838 !important;
 }
 
-/* 未選擇的按鈕 - 保持橘色 */
 .vote-button.not-selected {
   background-color: #ffa748;
 }
@@ -335,13 +344,11 @@ html, body {
   background-color: #ff9500;
 }
 
-/* 選中的投票選項卡片 - 綠色邊框 */
 .vote-option.selected {
   border: 3px solid #28a745;
   box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
 }
 
-/* 平板尺寸 */
 @media (max-width: 1024px) {
   .vote-container {
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -349,7 +356,6 @@ html, body {
   }
 }
 
-/* 手機尺寸 */
 @media (max-width: 720px) {
   .vote-container {
     grid-template-columns: 1fr;
@@ -368,11 +374,6 @@ html, body {
     font-size: 0.9rem;
     margin-bottom: 20px;
   }
-}
-
-.navbar a.active {
-  background-color: #ff9500;
-  font-weight: bold;
 }
 
 /* 本週菜單樣式 */
@@ -449,7 +450,6 @@ html, body {
   justify-content: center;
 }
 
-/* 平板尺寸 */
 @media (max-width: 1024px) {
   .weekly-menu h2 {
     font-size: 1.5rem;
@@ -473,7 +473,6 @@ html, body {
   }
 }
 
-/* 手機尺寸 */
 @media (max-width: 720px) {
   .weekly-menu h2 {
     font-size: 1.3rem;
@@ -508,6 +507,7 @@ html, body {
   margin-bottom: 30px;
   text-align: center;
 }
+
 .login-container h3 {
   color: #bc661a;
   margin-bottom: 20px;
@@ -602,382 +602,331 @@ html, body {
 
 /* 新增店家 CSS */
 .add-restaurant-section {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
 .form-container {
-    background: white;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .form-group {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
+  clear: both;
 }
 
 .form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
-    color: #333;
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #333;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
-    width: 100%;
-    padding: 10px;
-    border: 2px solid #ddd;
-    border-radius: 5px;
-    font-size: 16px;
-    box-sizing: border-box;
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  box-sizing: border-box;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-    outline: none;
-    border-color: #4CAF50;
+  outline: none;
+  border-color: #4CAF50;
 }
 
 .form-group textarea {
-    min-height: 100px;
-    resize: vertical;
+  min-height: 100px;
+  resize: vertical;
 }
 
 .required {
-    color: red;
-    margin-left: 4px;
+  color: red;
+  margin-left: 4px;
 }
 
 .checkbox-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
 }
 
 .checkbox-item {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .checkbox-item input[type="checkbox"] {
-    width: auto;
-    margin-right: 5px;
+  width: auto;
+  margin-right: 5px;
 }
 
 .submit-btn {
-    background: #4CAF50;
-    color: white;
-    padding: 15px 40px;
-    border: none;
-    border-radius: 5px;
-    font-size: 18px;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 10px;
+  background: #4CAF50;
+  color: white;
+  padding: 15px 40px;
+  border: none;
+  border-radius: 5px;
+  font-size: 18px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 10px;
+  flex: 2;
 }
 
 .submit-btn:hover {
-    background: #45a049;
+  background: #45a049;
 }
 
 .submit-btn:disabled {
-    background: #ccc;
-    cursor: not-allowed;
+  background: #ccc;
+  cursor: not-allowed;
 }
 
 .help-text {
-    font-size: 14px;
-    color: #666;
-    margin-top: 5px;
+  font-size: 14px;
+  color: #666;
+  margin-top: 5px;
 }
 
 .login-notice {
-    background: #fff3cd;
-    border: 2px solid #ffc107;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    margin: 20px 0;
+  background: #fff3cd;
+  border: 2px solid #ffc107;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  margin: 20px 0;
 }
 
 .login-notice h3 {
-    color: #856404;
-    margin-bottom: 10px;
+  color: #856404;
+  margin-bottom: 10px;
 }
 
 .login-btn {
-    display: inline-flex;
-    align-items: center;
-    background: white;
-    border: 1px solid #bc661a;
-    border-radius: 4px;
-    padding: 12px 24px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 500;
-    color: #3c4043;
-    transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  background: white;
+  border: 1px solid #bc661a;
+  border-radius: 4px;
+  padding: 12px 24px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  color: #3c4043;
+  transition: all 0.3s;
 }
 
 .login-btn:hover {
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
 .login-btn img {
-    width: 20px;
-    height: 20px;
-}
-
-.user-info {
-    background: #e8f5e9;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.user-info-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-}
-
-.logout-btn {
-    background: #f44336;
-    color: white;
-    padding: 8px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.logout-btn:hover {
-    background: #da190b;
-}
-
-.hidden {
-    display: none !important;
+  width: 20px;
+  height: 20px;
 }
 
 .cancel-btn {
-    background: #757575;
-    color: white;
-    padding: 12px 30px;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    flex: 1;
+  background: #757575;
+  color: white;
+  padding: 12px 30px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  flex: 1;
 }
 
 .cancel-btn:hover {
-    background: #616161;
-}
-
-.submit-btn {
-    flex: 2;
+  background: #616161;
 }
 
 /* 便當店家頁面*/
 .loading {
-    text-align: center;
-    padding: 50px;
-    font-size: 18px;
-    color: #666;
+  text-align: center;
+  padding: 50px;
+  font-size: 18px;
+  color: #666;
 }
 
 .no-restaurants {
-    text-align: center;
-    padding: 50px;
-    background: #f9f9f9;
-    border-radius: 10px;
-    margin: 20px;
+  text-align: center;
+  padding: 50px;
+  background: #f9f9f9;
+  border-radius: 10px;
+  margin: 20px;
 }
 
 .no-restaurants h3 {
-    color: #666;
-    margin-bottom: 10px;
+  color: #666;
+  margin-bottom: 10px;
 }
 
 .no-restaurants p {
-    color: #999;
-    margin-bottom: 20px;
+  color: #999;
+  margin-bottom: 20px;
 }
 
 .add-restaurant-btn {
-    display: inline-block;
-    background: #4CAF50;
-    color: white;
-    padding: 12px 30px;
-    text-decoration: none;
-    border-radius: 5px;
-    font-size: 16px;
+  display: inline-block;
+  background: #4CAF50;
+  color: white;
+  padding: 12px 30px;
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 16px;
 }
 
 .add-restaurant-btn:hover {
-    background: #45a049;
+  background: #45a049;
 }
 
 .restaurant-info {
-    margin-top: 10px;
-    font-size: 14px;
-    color: #666;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #666;
 }
 
 .restaurant-info p {
-    margin: 5px 0;
+  margin: 5px 0;
 }
 
 .restaurant-type {
-    display: inline-block;
-    background: #e3f2fd;
-    color: #1976d2;
-    padding: 4px 12px;
-    border-radius: 15px;
-    font-size: 12px;
-    margin-bottom: 8px;
+  display: inline-block;
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+  margin-bottom: 8px;
 }
 
 .closed-days {
-    color: #f44336;
-    font-size: 13px;
+  color: #f44336;
+  font-size: 13px;
 }
 
 .restaurant-note {
-    background: #fff3cd;
-    padding: 8px;
-    border-radius: 5px;
-    margin-top: 8px;
-    font-size: 13px;
-    color: #856404;
+  background: #fff3cd;
+  padding: 8px;
+  border-radius: 5px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #856404;
 }
 
 .button-group {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-    flex-wrap: wrap;
-}
-
-.button {
-    flex: 1;
-    min-width: 80px;
-    text-align: center;
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
 }
 
 .button-edit {
-    background: #2196F3;
+  background: #2196F3;
 }
 
 .button-edit:hover {
-    background: #0b7dda;
+  background: #0b7dda;
 }
 
 .button-delete {
-    background: #f44336;
+  background: #f44336;
 }
 
 .button-delete:hover {
-    background: #da190b;
+  background: #da190b;
 }
 
 /* 登入狀態列 */
 .auth-bar {
-    background: #f5f5f5;
-    padding: 10px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #ddd;
+  background: #f5f5f5;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
 }
 
 .auth-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .auth-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
 }
 
 .auth-name {
-    font-size: 14px;
-    font-weight: 500;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .login-btn-small {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
 }
 
 .login-btn-small:hover {
-    background: #45a049;
+  background: #45a049;
 }
 
 .logout-btn-small {
-    background: #757575;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
+  background: #757575;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
 }
 
 .logout-btn-small:hover {
-    background: #616161;
+  background: #616161;
 }
 
-/*新店家的樣式 new*/
+/* 新店家的樣式 new */
 .new-badge {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
-    color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: bold;
-    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
-    animation: pulse 2s infinite;
-    z-index: 10;
-}
-      
-@keyframes pulse {
-    0%, 100% {
-      transform: scale(1);
-      box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
-    }
-    50% {
-      transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(255, 107, 107, 0.6);
-    }
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+  animation: pulse 2s infinite;
+  z-index: 10;
 }
 
-.restaurant-card {
-  position: relative;
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.6);
+  }
 }
 
 /* 編輯彈窗樣式 */
@@ -1022,42 +971,6 @@ html, body {
   color: #000;
 }
 
-.form-group {
-  margin-bottom: 20px;
-  clear: both;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: #333;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: #ff6b35;
-}
-
-.checkbox-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
 .checkbox-group label {
   display: flex;
   align-items: center;
@@ -1086,28 +999,33 @@ html, body {
   background-color: #5a6268;
 }
 
+.loading-restaurants {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+/* 更小螢幕的額外調整 */
+@media (max-width: 480px) {
+  .navbar a {
+    padding: 8px 3px;
+    font-size: 0.7rem;
+  }
+}
+
 @media (max-width: 768px) {
-    .navbar {
-      flex-direction: column;
-    }
+  .restaurant-list {
+    grid-template-columns: 1fr;
+  }
 
-    .navbar a {
-      width: 100%;
-      text-align: center;
-    }
+  .modal-content {
+    width: 95%;
+    padding: 20px;
+    margin: 10px;
+  }
 
-    .restaurant-list {
-      grid-template-columns: 1fr;
-    }
-
-    .modal-content {
-      width: 95%;
-      padding: 20px;
-      margin: 10px;
-    }
-        
-    .checkbox-group {
-      flex-direction: column;
-      gap: 8px;
-    }
+  .checkbox-group {
+    flex-direction: column;
+    gap: 8px;
+  }
 }
