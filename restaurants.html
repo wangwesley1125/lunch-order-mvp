@@ -138,411 +138,408 @@
 
         let currentUser = null;
 
+        // 創建預設圖片 SVG (淺灰色背景 + 照片圖標)
+        const defaultImageSVG = `data:image/svg+xml,${encodeURIComponent(`
+          <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+            <rect width="400" height="300" fill="#f5f5f5"/>
+            <g transform="translate(200, 150)">
+              <rect x="-50" y="-40" width="100" height="80" rx="8" fill="none" stroke="#bdbdbd" stroke-width="3"/>
+              <circle cx="-20" cy="-15" r="8" fill="#bdbdbd"/>
+              <path d="M-40 20 L-20 -5 L10 15 L40 -10 L40 20 Z" fill="#e0e0e0"/>
+            </g>
+          </svg>
+        `)}`;
+
         // 檢查店家是否為新店家（24小時內新增）
         function isNewRestaurant(createdAt) {
-            if (!createdAt) return false;
-            
-            const createdDate = new Date(createdAt);
-            const now = new Date();
-            const hoursDiff = (now - createdDate) / (1000 * 60 * 60); // 轉換為小時
-            
-            return hoursDiff < 24; // 24小時內算新店家
+          if (!createdAt) return false;
+          const createdDate = new Date(createdAt);
+          const now = new Date();
+          const hoursDiff = (now - createdDate) / (1000 * 60 * 60);
+          return hoursDiff < 24;
         }
 
         // 監聽使用者登入狀態
         onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            updateAuthUI(user);
+          currentUser = user;
+          updateAuthUI(user);
         });
 
         // 更新登入介面
         function updateAuthUI(user) {
-            const authInfo = document.getElementById('authInfo');
-            const authButtons = document.getElementById('authButtons');
+          const authInfo = document.getElementById('authInfo');
+          const authButtons = document.getElementById('authButtons');
 
-            if (user) {
-                authInfo.innerHTML = `
-                    <img src="${user.photoURL || 'https://via.placeholder.com/32'}" class="auth-avatar" alt="Avatar">
-                    <span class="auth-name">${user.displayName || user.email}</span>
-                `;
-                authButtons.innerHTML = `
-                    <button id="logoutBtn" class="logout-btn-small">登出</button>
-                `;
-                
-                // 綁定登出按鈕
-                document.getElementById('logoutBtn').addEventListener('click', async () => {
-                    try {
-                        await signOut(auth);
-                        alert('已登出');
-                    } catch (error) {
-                        console.error('登出失敗:', error);
-                    }
-                });
-            } else {
-                authInfo.innerHTML = `<span id="authStatus">未登入（需要登入才能編輯或刪除店家）</span>`;
-                authButtons.innerHTML = `
-                    <button id="loginBtn" class="login-btn-small">Google 登入</button>
-                `;
-                
-                // 綁定登入按鈕
-                document.getElementById('loginBtn').addEventListener('click', async () => {
-                    try {
-                        await signInWithPopup(auth, provider);
-                    } catch (error) {
-                        console.error('登入失敗:', error);
-                        alert('登入失敗：' + error.message);
-                    }
-                });
-            }
+          if (user) {
+            authInfo.innerHTML = `
+              <img src="${user.photoURL || defaultImageSVG}" class="auth-avatar" alt="Avatar">
+              <span class="auth-name">${user.displayName || user.email}</span>
+            `;
+            authButtons.innerHTML = `
+              <button id="logoutBtn" class="logout-btn-small">登出</button>
+            `;
+            
+            document.getElementById('logoutBtn').addEventListener('click', async () => {
+              try {
+                await signOut(auth);
+                alert('已登出');
+              } catch (error) {
+                console.error('登出失敗:', error);
+              }
+            });
+          } else {
+            authInfo.innerHTML = `<span id="authStatus">未登入（需要登入才能編輯或刪除店家）</span>`;
+            authButtons.innerHTML = `
+              <button id="loginBtn" class="login-btn-small">Google 登入</button>
+            `;
+            
+            document.getElementById('loginBtn').addEventListener('click', async () => {
+              try {
+                await signInWithPopup(auth, provider);
+              } catch (error) {
+                console.error('登入失敗:', error);
+                alert('登入失敗：' + error.message);
+              }
+            });
+          }
         }
 
         // 監聽店家資料變化
         onValue(restaurantsRef, (snapshot) => {
-            const loadingMessage = document.getElementById('loadingMessage');
-            const noRestaurants = document.getElementById('noRestaurants');
-            const restaurantList = document.getElementById('restaurantList');
+          const loadingMessage = document.getElementById('loadingMessage');
+          const noRestaurants = document.getElementById('noRestaurants');
+          const restaurantList = document.getElementById('restaurantList');
 
-            // 隱藏載入訊息
-            loadingMessage.style.display = 'none';
+          loadingMessage.style.display = 'none';
+          restaurantList.innerHTML = '';
 
-            // 清空現有內容
-            restaurantList.innerHTML = '';
+          const restaurants = snapshot.val();
 
-            const restaurants = snapshot.val();
+          if (!restaurants) {
+            noRestaurants.style.display = 'block';
+            return;
+          }
 
-            // 如果沒有店家資料
-            if (!restaurants) {
-                noRestaurants.style.display = 'block';
-                return;
+          noRestaurants.style.display = 'none';
+
+          const restaurantArray = Object.entries(restaurants).map(([id, data]) => ({
+            id,
+            ...data
+          })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+          restaurantArray.forEach(restaurant => {
+            if (restaurant.isActive) {
+              const card = createRestaurantCard(restaurant);
+              restaurantList.appendChild(card);
             }
-
-            // 隱藏「沒有店家」提示
-            noRestaurants.style.display = 'none';
-
-            // 將店家資料轉換成陣列並排序（最新的在前面）
-            const restaurantArray = Object.entries(restaurants).map(([id, data]) => ({
-                id,
-                ...data
-            })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-            // 動態生成店家卡片
-            restaurantArray.forEach(restaurant => {
-                if (restaurant.isActive) {  // 只顯示啟用的店家
-                    const card = createRestaurantCard(restaurant);
-                    restaurantList.appendChild(card);
-                }
-            });
+          });
         });
 
         // 建立店家卡片
         function createRestaurantCard(restaurant) {
-            const article = document.createElement('article');
-            article.className = 'restaurant-card';
+          const article = document.createElement('article');
+          article.className = 'restaurant-card';
 
-            // 如果是新店家，加上 NEW 標籤
-            if (isNewRestaurant(restaurant.createdAt)) {
-                const newBadge = document.createElement('span');
-                newBadge.className = 'new-badge';
-                newBadge.textContent = '✨ NEW';
-                article.appendChild(newBadge);
-            }
+          if (isNewRestaurant(restaurant.createdAt)) {
+            const newBadge = document.createElement('span');
+            newBadge.className = 'new-badge';
+            newBadge.textContent = '✨ NEW';
+            article.appendChild(newBadge);
+          }
 
-            // 店家圖片
+          // 店家圖片或佔位符
+          if (restaurant.imageUrl && restaurant.imageUrl.trim() !== '') {
             const img = document.createElement('img');
-            img.src = restaurant.imageUrl || 'https://via.placeholder.com/400x300?text=無圖片';
+            img.src = restaurant.imageUrl;
             img.alt = restaurant.name;
+            
+            // 圖片載入失敗時使用預設圖片
             img.onerror = function() {
-                this.src = 'https://via.placeholder.com/400x300?text=無圖片';
+              // 替換為佔位符
+              const placeholder = createPlaceholder();
+              this.parentNode.replaceChild(placeholder, this);
             };
-
-            // 卡片內容
-            const cardBody = document.createElement('article');
-            cardBody.className = 'card-body';
-
-            // 店家名稱
-            const h3 = document.createElement('h3');
-            h3.textContent = restaurant.name;
-
-            // 店家類型標籤
-            const typeSpan = document.createElement('span');
-            typeSpan.className = 'restaurant-type';
-            typeSpan.textContent = restaurant.type || '其他';
-
-            // 店家資訊
-            const infoDiv = document.createElement('div');
-            infoDiv.className = 'restaurant-info';
-
-            // 地址
-            if (restaurant.address) {
-                const addressP = document.createElement('p');
-                addressP.innerHTML = `${restaurant.address}`;
-                infoDiv.appendChild(addressP);
-            }
-
-            // 電話
-            if (restaurant.phone) {
-                const phoneP = document.createElement('p');
-                phoneP.innerHTML = `${restaurant.phone}`;
-                infoDiv.appendChild(phoneP);
-            }
-
-            // 公休日
-            if (restaurant.closedDays && restaurant.closedDays.length > 0) {
-                const closedP = document.createElement('p');
-                closedP.className = 'closed-days';
-                closedP.innerHTML = `公休日：${restaurant.closedDays.join('、')}`;
-                infoDiv.appendChild(closedP);
-            }
-
-            // 備註
-            if (restaurant.note) {
-                const noteDiv = document.createElement('div');
-                noteDiv.className = 'restaurant-note';
-                noteDiv.innerHTML = `${restaurant.note}`;
-                infoDiv.appendChild(noteDiv);
-            }
-
-            // 評分區域
-            const ratingDiv = document.createElement('div');
-            ratingDiv.className = 'rating';
             
-            // 新增者資訊
-            const createdInfo = document.createElement('span');
-            createdInfo.style.fontSize = '12px';
-            createdInfo.style.color = '#999';
-            createdInfo.textContent = `由 ${restaurant.createdByName || '使用者'} 新增`;
-            
-            // 按鈕容器
-            const buttonGroup = document.createElement('div');
-            buttonGroup.className = 'button-group';
-
-            // 查看詳情按鈕
-            const detailButton = document.createElement('a');
-            detailButton.href = '#';
-            detailButton.className = 'button';
-            detailButton.textContent = '查看詳情';
-            detailButton.onclick = (e) => {
-                e.preventDefault();
-                showRestaurantDetail(restaurant);
-            };
-
-            // 編輯按鈕
-            const editButton = document.createElement('a');
-            editButton.href = '#';
-            editButton.className = 'button button-edit';
-            editButton.textContent = '編輯';
-            editButton.onclick = (e) => {
-                e.preventDefault();
-                editRestaurant(restaurant);
-            };
-
-            // 刪除按鈕
-            const deleteButton = document.createElement('a');
-            deleteButton.href = '#';
-            deleteButton.className = 'button button-delete';
-            deleteButton.textContent = '刪除';
-            deleteButton.onclick = (e) => {
-                e.preventDefault();
-                deleteRestaurant(restaurant);
-            };
-
-            buttonGroup.appendChild(detailButton);
-            buttonGroup.appendChild(editButton);
-            buttonGroup.appendChild(deleteButton);
-
-            ratingDiv.appendChild(createdInfo);
-            ratingDiv.appendChild(buttonGroup);
-
-            // 組合所有元素
-            cardBody.appendChild(h3);
-            cardBody.appendChild(typeSpan);
-            cardBody.appendChild(infoDiv);
-            cardBody.appendChild(ratingDiv);
-
             article.appendChild(img);
-            article.appendChild(cardBody);
+          } else {
+            // 直接使用佔位符
+            const placeholder = createPlaceholder();
+            article.appendChild(placeholder);
+          }
 
-            return article;
+          // 卡片內容
+          const cardBody = document.createElement('div');
+          cardBody.className = 'card-body';
+
+          const h3 = document.createElement('h3');
+          h3.textContent = restaurant.name;
+
+          const typeSpan = document.createElement('span');
+          typeSpan.className = 'restaurant-type';
+          typeSpan.textContent = restaurant.type || '其他';
+
+          const infoDiv = document.createElement('div');
+          infoDiv.className = 'restaurant-info';
+
+          if (restaurant.address) {
+            const addressP = document.createElement('p');
+            addressP.innerHTML = `地址: ${restaurant.address}`;
+            infoDiv.appendChild(addressP);
+          }
+
+          if (restaurant.phone) {
+            const phoneP = document.createElement('p');
+            phoneP.innerHTML = `電話: ${restaurant.phone}`;
+            infoDiv.appendChild(phoneP);
+          }
+
+          if (restaurant.closedDays && restaurant.closedDays.length > 0) {
+            const closedP = document.createElement('p');
+            closedP.className = 'closed-days';
+            closedP.innerHTML = `公休日：${restaurant.closedDays.join('、')}`;
+            infoDiv.appendChild(closedP);
+          }
+
+          if (restaurant.note) {
+            const noteDiv = document.createElement('div');
+            noteDiv.className = 'restaurant-note';
+            noteDiv.innerHTML = `📝 ${restaurant.note}`;
+            infoDiv.appendChild(noteDiv);
+          }
+
+          const ratingDiv = document.createElement('div');
+          ratingDiv.className = 'rating';
+          
+          const createdInfo = document.createElement('span');
+          createdInfo.style.fontSize = '12px';
+          createdInfo.style.color = '#999';
+          createdInfo.textContent = `由 ${restaurant.createdByName || '使用者'} 新增`;
+          
+          const buttonGroup = document.createElement('div');
+          buttonGroup.className = 'button-group';
+
+          const detailButton = document.createElement('a');
+          detailButton.href = '#';
+          detailButton.className = 'button';
+          detailButton.textContent = '查看詳情';
+          detailButton.onclick = (e) => {
+            e.preventDefault();
+            showRestaurantDetail(restaurant);
+          };
+
+          const editButton = document.createElement('a');
+          editButton.href = '#';
+          editButton.className = 'button button-edit';
+          editButton.textContent = '編輯';
+          editButton.onclick = (e) => {
+            e.preventDefault();
+            editRestaurant(restaurant);
+          };
+
+          const deleteButton = document.createElement('a');
+          deleteButton.href = '#';
+          deleteButton.className = 'button button-delete';
+          deleteButton.textContent = '刪除';
+          deleteButton.onclick = (e) => {
+            e.preventDefault();
+            deleteRestaurant(restaurant);
+          };
+
+          buttonGroup.appendChild(detailButton);
+          buttonGroup.appendChild(editButton);
+          buttonGroup.appendChild(deleteButton);
+
+          ratingDiv.appendChild(createdInfo);
+          ratingDiv.appendChild(buttonGroup);
+
+          cardBody.appendChild(h3);
+          cardBody.appendChild(typeSpan);
+          cardBody.appendChild(infoDiv);
+          cardBody.appendChild(ratingDiv);
+
+          article.appendChild(cardBody);
+
+          return article;
+        }
+
+        // 創建圖片佔位符
+        function createPlaceholder() {
+          const placeholder = document.createElement('div');
+          placeholder.className = 'placeholder-image';
+          
+          placeholder.innerHTML = `
+            <svg class="placeholder-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="8" y="12" width="48" height="40" rx="4" stroke="#bdbdbd" stroke-width="2"/>
+              <circle cx="24" cy="26" r="4" fill="#bdbdbd"/>
+              <path d="M12 44 L20 32 L32 40 L44 28 L52 36 V48 H12 V44 Z" fill="#e0e0e0"/>
+            </svg>
+          `;
+          
+          return placeholder;
         }
 
         // 顯示店家詳細資訊
         function showRestaurantDetail(restaurant) {
-            let message = `${restaurant.name}\n\n`;
-            message += `類型：${restaurant.type}\n`;
-            
-            if (restaurant.address) {
-                message += `地址：${restaurant.address}\n`;
-            }
-            
-            if (restaurant.phone) {
-                message += `電話：${restaurant.phone}\n`;
-            }
-            
-            if (restaurant.closedDays && restaurant.closedDays.length > 0) {
-                message += `公休日：${restaurant.closedDays.join('、')}\n`;
-            }
-            
-            if (restaurant.note) {
-                message += `\n備註：\n${restaurant.note}`;
-            }
+          let message = `🍱 ${restaurant.name}\n\n`;
+          message += `類型：${restaurant.type}\n`;
+          
+          if (restaurant.address) {
+            message += `地址：${restaurant.address}\n`;
+          }
+          
+          if (restaurant.phone) {
+            message += `電話：${restaurant.phone}\n`;
+          }
+          
+          if (restaurant.closedDays && restaurant.closedDays.length > 0) {
+            message += `公休日：${restaurant.closedDays.join('、')}\n`;
+          }
+          
+          if (restaurant.note) {
+            message += `\n備註：\n${restaurant.note}`;
+          }
 
-            // 顯示新增時間
-            if (restaurant.createdAt) {
-                const createdDate = new Date(restaurant.createdAt);
-                message += `\n\n新增時間：${createdDate.toLocaleString('zh-TW')}`;
-            }
+          if (restaurant.createdAt) {
+            const createdDate = new Date(restaurant.createdAt);
+            message += `\n\n新增時間：${createdDate.toLocaleString('zh-TW')}`;
+          }
 
-            alert(message);
+          alert(message);
         }
 
         // 編輯店家
         function editRestaurant(restaurant) {
-            // 檢查是否已登入
-            if (!currentUser) {
-                alert('請先登入才能編輯店家！');
-                return;
-            }
+          if (!currentUser) {
+            alert('請先登入才能編輯店家！');
+            return;
+          }
 
-            // 顯示編輯彈窗
-            const modal = document.getElementById('editModal');
-            modal.style.display = 'flex';
+          const modal = document.getElementById('editModal');
+          modal.style.display = 'flex';
 
-            // 填入現有資料
-            document.getElementById('editRestaurantId').value = restaurant.id;
-            document.getElementById('editName').value = restaurant.name || '';
-            document.getElementById('editType').value = restaurant.type || '便當';
-            document.getElementById('editAddress').value = restaurant.address || '';
-            document.getElementById('editPhone').value = restaurant.phone || '';
-            document.getElementById('editImageUrl').value = restaurant.imageUrl || '';
-            document.getElementById('editNote').value = restaurant.note || '';
+          document.getElementById('editRestaurantId').value = restaurant.id;
+          document.getElementById('editName').value = restaurant.name || '';
+          document.getElementById('editType').value = restaurant.type || '便當';
+          document.getElementById('editAddress').value = restaurant.address || '';
+          document.getElementById('editPhone').value = restaurant.phone || '';
+          document.getElementById('editImageUrl').value = restaurant.imageUrl || '';
+          document.getElementById('editNote').value = restaurant.note || '';
 
-            // 設定公休日
-            document.querySelectorAll('.editClosedDay').forEach(checkbox => {
-                checkbox.checked = restaurant.closedDays && restaurant.closedDays.includes(checkbox.value);
-            });
+          document.querySelectorAll('.editClosedDay').forEach(checkbox => {
+            checkbox.checked = restaurant.closedDays && restaurant.closedDays.includes(checkbox.value);
+          });
         }
 
         // 關閉編輯彈窗
         document.querySelector('.close').addEventListener('click', () => {
-            document.getElementById('editModal').style.display = 'none';
+          document.getElementById('editModal').style.display = 'none';
         });
 
         document.getElementById('cancelEdit').addEventListener('click', () => {
-            document.getElementById('editModal').style.display = 'none';
+          document.getElementById('editModal').style.display = 'none';
         });
 
-        // 點擊彈窗外部關閉
         window.addEventListener('click', (e) => {
-            const modal = document.getElementById('editModal');
-            if (e.target === modal) {
-                modal.style.display = 'none';
-            }
+          const modal = document.getElementById('editModal');
+          if (e.target === modal) {
+            modal.style.display = 'none';
+          }
         });
 
         // 處理編輯表單提交
         document.getElementById('editForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+          e.preventDefault();
 
-            if (!currentUser) {
-                alert('請先登入才能編輯店家！');
-                return;
-            }
+          if (!currentUser) {
+            alert('請先登入才能編輯店家！');
+            return;
+          }
 
-            const restaurantId = document.getElementById('editRestaurantId').value;
+          const restaurantId = document.getElementById('editRestaurantId').value;
+          
+          const closedDays = Array.from(document.querySelectorAll('.editClosedDay:checked'))
+            .map(cb => cb.value);
+
+          const updatedData = {
+            name: document.getElementById('editName').value,
+            type: document.getElementById('editType').value,
+            address: document.getElementById('editAddress').value,
+            phone: document.getElementById('editPhone').value,
+            imageUrl: document.getElementById('editImageUrl').value,
+            closedDays: closedDays,
+            note: document.getElementById('editNote').value,
+            updatedAt: new Date().toISOString(),
+            updatedBy: currentUser.uid,
+            updatedByName: currentUser.displayName || currentUser.email
+          };
+
+          try {
+            const restaurantRef = ref(database, `restaurants/${restaurantId}`);
+            await update(restaurantRef, updatedData);
             
-            // 收集公休日
-            const closedDays = Array.from(document.querySelectorAll('.editClosedDay:checked'))
-                .map(cb => cb.value);
-
-            const updatedData = {
-                name: document.getElementById('editName').value,
-                type: document.getElementById('editType').value,
-                address: document.getElementById('editAddress').value,
-                phone: document.getElementById('editPhone').value,
-                imageUrl: document.getElementById('editImageUrl').value,
-                closedDays: closedDays,
-                note: document.getElementById('editNote').value,
-                updatedAt: new Date().toISOString(),
-                updatedBy: currentUser.uid,
-                updatedByName: currentUser.displayName || currentUser.email
-            };
-
-            try {
-                const restaurantRef = ref(database, `restaurants/${restaurantId}`);
-                await update(restaurantRef, updatedData);
-                
-                alert('店家資訊已更新成功！');
-                document.getElementById('editModal').style.display = 'none';
-            } catch (error) {
-                console.error('更新失敗：', error);
-                alert('更新失敗：' + error.message);
-            }
+            alert('店家資訊已更新成功！');
+            document.getElementById('editModal').style.display = 'none';
+          } catch (error) {
+            console.error('更新失敗：', error);
+            alert('更新失敗：' + error.message);
+          }
         });
 
         // 刪除店家
         function deleteRestaurant(restaurant) {
-            // 檢查是否已登入
-            if (!currentUser) {
-                alert('請先登入才能刪除店家！');
-                return;
-            }
+          if (!currentUser) {
+            alert('請先登入才能刪除店家！');
+            return;
+          }
 
-            const confirmDelete = confirm(`確定要刪除「${restaurant.name}」嗎？\n\n此操作無法復原！`);
+          const confirmDelete = confirm(`確定要刪除「${restaurant.name}」嗎？\n\n此操作無法復原！`);
+          
+          if (confirmDelete) {
+            const restaurantRef = ref(database, `restaurants/${restaurant.id}`);
             
-            if (confirmDelete) {
-                const restaurantRef = ref(database, `restaurants/${restaurant.id}`);
-                
-                remove(restaurantRef)
-                    .then(() => {
-                        alert('店家已成功刪除！');
-                    })
-                    .catch((error) => {
-                        console.error('刪除失敗：', error);
-                        alert('刪除失敗：' + error.message + '\n\n請確認您已登入且有權限刪除此店家。');
-                    });
-            }
+            remove(restaurantRef)
+              .then(() => {
+                alert('店家已成功刪除！');
+              })
+              .catch((error) => {
+                console.error('刪除失敗：', error);
+                alert('刪除失敗：' + error.message + '\n\n請確認您已登入且有權限刪除此店家。');
+              });
+          }
         }
 
-        // 動態調整位置，避免有空隙
-      function adjustPositions() {
+        // 動態調整位置
+        function adjustPositions() {
+          const header = document.querySelector('.header');
+          const navbar = document.querySelector('.navbar');
+          const main = document.querySelector('.main');
+          
+          if (header && navbar) {
+            const headerRect = header.getBoundingClientRect();
+            navbar.style.top = headerRect.bottom + 'px';
+          }
+          
+          if (navbar && main) {
+            const navbarRect = navbar.getBoundingClientRect();
+            main.style.top = navbarRect.bottom + 'px';
+          }
+        }
+
+        window.addEventListener('load', adjustPositions);
+        window.addEventListener('resize', adjustPositions);
+
         const header = document.querySelector('.header');
         const navbar = document.querySelector('.navbar');
-        const main = document.querySelector('.main');
-          
-        if (header && navbar) {
-          // 讓 navbar 緊貼 header 底部
-          const headerRect = header.getBoundingClientRect();
-          const headerBottom = headerRect.top + headerRect.height;
-          navbar.style.top = headerBottom + 'px';
+
+        if (header) {
+          const headerObserver = new ResizeObserver(adjustPositions);
+          headerObserver.observe(header);
         }
-          
-        if (navbar && main) {
-          // 讓 main 緊貼 navbar 底部
-          const navbarRect = navbar.getBoundingClientRect();
-          const navbarBottom = navbarRect.top + navbarRect.height;
-          main.style.top = navbarBottom + 'px';
+
+        if (navbar) {
+          const navbarObserver = new ResizeObserver(adjustPositions);
+          navbarObserver.observe(navbar);
         }
-      }
-
-      // 頁面載入後調整
-      window.addEventListener('load', adjustPositions);
-
-      // 視窗大小改變時調整
-      window.addEventListener('resize', adjustPositions);
-
-      // 使用 ResizeObserver 監聽 header 和 navbar 高度變化
-      const header = document.querySelector('.header');
-      const navbar = document.querySelector('.navbar');
-
-      if (header) {
-        const headerObserver = new ResizeObserver(adjustPositions);
-        headerObserver.observe(header);
-      }
-
-      if (navbar) {
-        const navbarObserver = new ResizeObserver(adjustPositions);
-        navbarObserver.observe(navbar);
-      }
     </script>
 
   </body>
