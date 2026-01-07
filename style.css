@@ -73,9 +73,10 @@ html, body {
   text-align: center;
   padding: 14px 10px;
   text-decoration: none;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
+  word-wrap: break-word;
+  hyphens: auto;
 }
 
 .navbar a:hover {
@@ -227,8 +228,9 @@ html, body {
   }
 
   .navbar a {
-    padding: 10px 5px;
-    font-size: 0.75rem;
+    padding: 10px 2px;
+    font-size: 0.7rem;
+    line-height: 1.2;
   }
 
   .main {
@@ -1008,8 +1010,9 @@ html, body {
 /* 更小螢幕的額外調整 */
 @media (max-width: 480px) {
   .navbar a {
-    padding: 8px 3px;
-    font-size: 0.7rem;
+    padding: 8px 1px;
+    font-size: 0.65rem;
+    line-height: 1.1;
   }
 }
 
