@@ -502,6 +502,47 @@
                     });
             }
         }
+
+        // 動態調整位置，避免有空隙
+      function adjustPositions() {
+        const header = document.querySelector('.header');
+        const navbar = document.querySelector('.navbar');
+        const main = document.querySelector('.main');
+          
+        if (header && navbar) {
+          // 讓 navbar 緊貼 header 底部
+          const headerRect = header.getBoundingClientRect();
+          const headerBottom = headerRect.top + headerRect.height;
+          navbar.style.top = headerBottom + 'px';
+        }
+          
+        if (navbar && main) {
+          // 讓 main 緊貼 navbar 底部
+          const navbarRect = navbar.getBoundingClientRect();
+          const navbarBottom = navbarRect.top + navbarRect.height;
+          main.style.top = navbarBottom + 'px';
+        }
+      }
+
+      // 頁面載入後調整
+      window.addEventListener('load', adjustPositions);
+
+      // 視窗大小改變時調整
+      window.addEventListener('resize', adjustPositions);
+
+      // 使用 ResizeObserver 監聽 header 和 navbar 高度變化
+      const header = document.querySelector('.header');
+      const navbar = document.querySelector('.navbar');
+
+      if (header) {
+        const headerObserver = new ResizeObserver(adjustPositions);
+        headerObserver.observe(header);
+      }
+
+      if (navbar) {
+        const navbarObserver = new ResizeObserver(adjustPositions);
+        navbarObserver.observe(navbar);
+      }
     </script>
 
   </body>
